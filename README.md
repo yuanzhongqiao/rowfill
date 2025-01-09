@@ -1,0 +1,64 @@
+<div align="center">
+  <h1>Parseta</h1>
+  <p>Open-source document processing platform built for knowledge workers</p>
+</div>
+
+## 👋 Welcome to Parseta
+
+Parseta helps extract, analyze, and process data from complex documents, images, PDFs and more with advanced AI capabilities.
+
+## ✨ Features
+
+### 📄 Document Processing
+- **Advanced OCR & Processing**: Extract text, tables, and handwriting from any document with high precision
+- **Auto-schema Generation**: Automatically detect and adapt to document structures
+- **Custom Actions**: Create tailored workflows with automated task processing
+
+### 🔒 Privacy & Security
+- **Local LLM Support**: Supports Local LLMs like Llama, Mistral also supports OpenAI vision models
+- **Sync with your company data**: Clone sensitive data while maintaining privacy
+- **Open Source**: Paresta is a AGPLv3 licensed open source project
+
+## 🚀 Getting Started
+
+1. Run the docker compose file
+2. Configure the environment variables (Refer to mockenv file)
+3. Start extracting data from your documents!
+
+## 📚 Documentation
+
+Visit our [documentation](https://docs.parseta.ai) for:
+- Detailed integration guides
+- API reference
+- Best practices
+- Example implementations
+- Privacy controls configuration
+
+## 🤝 Contributing
+
+We love contributions! If you'd like to contribute:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the AGPLV3 License - see the [LICENSE](LICENSE) file for details.
+
+## 💬 Community & Support
+
+- [Discord Community](https://discord.gg/parseta)
+- [GitHub Issues](https://github.com/ParsetaHQ/parseta/issues)
+- [Email Support](mailto:hello@parseta.ai)
+
+
+---
+**Note**: This project is a work in progress and is not yet ready for production use. We are actively working on it and will update this README as we make progress.
+
+---
+<div align="center">
+  <p>Built with ❤️ for the AI community</p>
+</div>

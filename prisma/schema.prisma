@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  otp           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  members       Member[]
+  sheets        Sheet[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  apiKey    String   @unique @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   Member[]
+  sheets    Sheet[]
+  sources   Source[]
+}
+
+model Member {
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  role           Role
+
+  @@id([userId, organizationId])
+}
+
+model Sheet {
+  id             String        @id @default(uuid())
+  name           String
+  createdById    String
+  createdBy      User          @relation(fields: [createdById], references: [id])
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  sources        SheetSource[]
+  columns        SheetColumn[]
+}
+
+model Source {
+  id             String        @id @default(uuid())
+  filename       String
+  nickname       String
+  isIndexed      Boolean       @default(false)
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime      @default(now())
+  sheets         SheetSource[]
+}
+
+model SheetSource {
+  id           String             @id @default(uuid())
+  sheetId      String
+  sheet        Sheet              @relation(fields: [sheetId], references: [id])
+  sourceId     String
+  source       Source             @relation(fields: [sourceId], references: [id])
+  columnValues SheetColumnValue[]
+}
+
+model SheetColumn {
+  id                String             @id @default(uuid())
+  sheetId           String
+  sheet             Sheet              @relation(fields: [sheetId], references: [id])
+  name              String
+  type              String
+  sheetColumnValues SheetColumnValue[]
+}
+
+model SheetColumnValue {
+  columnId String
+  column   SheetColumn @relation(fields: [columnId], references: [id])
+  value    String
+  misc     Json?
+  sourceId String
+  source   SheetSource @relation(fields: [sourceId], references: [id])
+
+  @@id([columnId, sourceId])
+}
