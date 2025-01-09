@@ -46,16 +46,17 @@ model Member {
 }
 
 model Sheet {
-  id             String        @id @default(uuid())
+  id             String             @id @default(uuid())
   name           String
   createdById    String
-  createdBy      User          @relation(fields: [createdById], references: [id])
+  createdBy      User               @relation(fields: [createdById], references: [id])
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
   sources        SheetSource[]
   columns        SheetColumn[]
+  columnValues   SheetColumnValue[]
 }
 
 model Source {
@@ -70,24 +71,26 @@ model Source {
 }
 
 model SheetSource {
-  id           String             @id @default(uuid())
-  sheetId      String
-  sheet        Sheet              @relation(fields: [sheetId], references: [id])
-  sourceId     String
-  source       Source             @relation(fields: [sourceId], references: [id])
-  columnValues SheetColumnValue[]
+  id        String             @id @default(uuid())
+  sheetId   String
+  sheet     Sheet              @relation(fields: [sheetId], references: [id])
+  sourceId  String
+  source    Source             @relation(fields: [sourceId], references: [id])
+  rowValues SheetColumnValue[]
 }
 
 model SheetColumn {
-  id                String             @id @default(uuid())
-  sheetId           String
-  sheet             Sheet              @relation(fields: [sheetId], references: [id])
-  name              String
-  type              String
-  sheetColumnValues SheetColumnValue[]
+  id           String             @id @default(uuid())
+  sheetId      String
+  sheet        Sheet              @relation(fields: [sheetId], references: [id])
+  name         String
+  type         String
+  columnValues SheetColumnValue[]
 }
 
 model SheetColumnValue {
+  sheetId  String
+  sheet    Sheet       @relation(fields: [sheetId], references: [id])
   columnId String
   column   SheetColumn @relation(fields: [columnId], references: [id])
   value    String

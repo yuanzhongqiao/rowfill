@@ -19,11 +19,13 @@ cron.schedule('*/10 * * * * *', async () => {
             }
         })
 
-        for(const source of sources) {
+        for (const source of sources) {
             await indexSource(source.id)
         }
 
     } catch (err) {
+        console.error(err)
+    } finally {
         await redis.del("cron-lock")
     }
 })

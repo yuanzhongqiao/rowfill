@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { redirect, usePathname, useRouter } from 'next/navigation'
-import { PiDatabaseBold, PiGearBold, PiPlusBold, PiTableBold } from 'react-icons/pi'
+import { PiDatabaseBold, PiGearBold, PiMagnifyingGlass, PiPlusBold, PiTableBold } from 'react-icons/pi'
 import { Button } from "@/components/ui/button"
 import { AddSheetDialog } from './sheetsDialog'
 import { checkAuth, fetchSheets } from './actions'
@@ -11,22 +11,33 @@ import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import SettingsPage from './settingsDialog'
 import SourcesDialog from './sourcesDialog'
+import { useSheetStore } from './shared'
 
-function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
+export default function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false)
   const [sheets, setSheets] = useState<Sheet[]>([])
   const router = useRouter()
   const pathname = usePathname()
+  const { dueForRefresh, setDueForRefresh } = useSheetStore()
 
   useEffect(() => {
     init()
   }, [])
 
   useEffect(() => {
-    if (sheets.length > 0) {
+    // Check if /sheets/slug pattern is in the pathname
+    if (sheets.length > 0 && !pathname.includes('/sheets/')) {
       router.push(`/console/sheets/${sheets[0].id}`)
     }
   }, [sheets.length])
+
+  // Refresh sheets when dueForRefresh is set
+  useEffect(() => {
+    if (dueForRefresh) {
+      handleFetchSheets()
+      setDueForRefresh("")
+    }
+  }, [dueForRefresh])
 
   const init = async () => {
     const auth = await checkAuth()
@@ -46,6 +57,9 @@ function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="w-[250px] border-r-[1px] border-gray-200 p-4">
         <div className="flex flex-col gap-2 items-stretch justify-between h-full">
           <div className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full mb-1 flex items-center justify-start gap-2">
+              <PiMagnifyingGlass /> Search Documents
+            </Button>
             <Button className="w-full mb-1 flex items-center justify-start gap-2" onClick={() => setIsAddProjectOpen(true)}>
               <PiPlusBold /> Add New Sheet
             </Button>
@@ -95,8 +109,4 @@ function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
       {sheets.length === 0 && <div className="text-sm text-gray-800 h-screen flex items-center justify-center overflow-auto" style={{ width: 'calc(100vw - 250px)' }}>No sheets found</div>}
     </div>
   )
-}
-
-export default function ConsoleLayout({ children }: { children: React.ReactNode }) {
-  return <ConsoleLayoutContent>{children}</ConsoleLayoutContent>
 }

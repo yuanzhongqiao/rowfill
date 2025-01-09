@@ -8,7 +8,6 @@ import { fetchSources, getUploadUrlForSource, addSource, deleteSource } from "./
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
 
 export default function SourcesDialog() {
     const [sources, setSources] = useState<Source[]>([])
@@ -73,6 +72,10 @@ export default function SourcesDialog() {
         }
     }
 
+    const filteredSources = sources.filter(source =>
+        source.nickname.toLowerCase().includes(search.toLowerCase())
+    )
+
     return (
         <div>
             <DialogTitle>Sources</DialogTitle>
@@ -93,7 +96,7 @@ export default function SourcesDialog() {
             {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
             <ScrollArea className="h-[350px] mt-5">
                 <div className="flex flex-col gap-3 pr-5 py-2">
-                    {sources.map((source) => (
+                    {filteredSources.map((source) => (
                         <div key={source.id} className="flex border-[1px] border-gray-200 rounded-md p-5 justify-between">
                             <div className="flex items-center gap-2">
                                 <PiFile size={20} />
@@ -104,7 +107,7 @@ export default function SourcesDialog() {
                         </div>
                     ))}
                 </div>
-                {sources.length === 0 && <div className="flex items-center justify-center h-[350px] text-muted-foreground">No sources found</div>}
+                {sources.length === 0 || filteredSources.length === 0 && <div className="flex items-center justify-center h-[350px] text-muted-foreground">No sources found</div>}
             </ScrollArea>
         </div>
     )
