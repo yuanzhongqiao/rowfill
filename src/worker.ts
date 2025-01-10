@@ -1,10 +1,10 @@
-import { Worker } from 'bullmq';
+import { Worker } from "bullmq";
 
 // Define the worker process
 new Worker(
-    'track_queue',
+    "queue",
     async (job) => {
-        
+        console.log("Worker running")
     },
     {
         connection: {
@@ -14,4 +14,4 @@ new Worker(
             db: parseInt(process.env.REDIS_DB || "0") || 0
         }
     }
-);
+)

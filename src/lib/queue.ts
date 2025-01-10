@@ -7,7 +7,7 @@ export default class TaskQueue {
 
     private constructor() {
         this._queue = new Queue(
-            "track_queue",
+            "queue",
             {
                 connection: {
                     host: process.env.REDIS_HOST,

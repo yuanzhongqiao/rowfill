@@ -18,7 +18,7 @@ export async function getPresignedUrlForUpload(filename: string) {
     const command = new PutObjectCommand({
         Bucket: process.env.AWS_STORAGE_BUCKET_NAME,
         Key: filename,
-        ContentType: 'application/octet-stream'
+        ContentType: "application/octet-stream"
     })
 
     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });

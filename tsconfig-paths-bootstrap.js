@@ -16,4 +16,4 @@ for (let key in paths) {
 }
 
 // Register the paths
-tsConfigPaths.register({ baseUrl, paths });
+tsConfigPaths.register({ baseUrl, paths })

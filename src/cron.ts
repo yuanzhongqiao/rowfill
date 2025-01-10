@@ -1,16 +1,17 @@
-import cron from 'node-cron'
-import { redis } from './lib/redis'
-import { indexSource } from './core/indexer'
-import { prisma } from './lib/prisma'
+import cron from "node-cron"
+import { indexSource } from "@/core/indexer"
+import { prisma } from "@/lib/prisma"
+import { redis } from "@/lib/redis"
 
-cron.schedule('*/10 * * * * *', async () => {
+
+cron.schedule("*/10 * * * * *", async () => {
     try {
         const lock = await redis.get("cron-lock")
 
         if (lock) {
             return
         }
-
+        
         await redis.set("cron-lock", "true")
 
         const sources = await prisma.source.findMany({
@@ -23,9 +24,10 @@ cron.schedule('*/10 * * * * *', async () => {
             await indexSource(source.id)
         }
 
+        await redis.del("cron-lock")
+
     } catch (err) {
         console.error(err)
-    } finally {
         await redis.del("cron-lock")
     }
 })

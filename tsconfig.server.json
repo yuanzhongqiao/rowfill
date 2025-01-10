@@ -28,6 +28,7 @@
         "src/app",
         "src/components",
         "src/hooks",
+        "src/lib/auth.ts",
         "**/tailwind.config.ts"
     ]
 }
