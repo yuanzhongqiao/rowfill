@@ -169,7 +169,7 @@ export default function SheetPage() {
                 <TableBody>
                     {sources.map((source) => (
                         <TableRow key={source.id}>
-                            <TableCell className="border-r-[1px] border-gray-200">{source.source.nickname}</TableCell>
+                            <TableCell className="border-r-[1px] border-gray-200">{source.source.nickName}</TableCell>
                             {columns.map((column) => (
                                 <TableCell className="border-r-[1px] border-gray-200" key={`${source.id}_${column.id}`}>{columnValues[`${source.id}_${column.id}`].value || "N/A"}</TableCell>
                             ))}
