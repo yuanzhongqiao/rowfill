@@ -39,7 +39,7 @@ export default function SourcesDialog() {
                 await instance.put(url, file)
 
                 // Save source in database
-                await addSource(file.name, filename)
+                await addSource(file.name, filename, file.type)
 
                 // Refresh sources list
                 await fetchData()
@@ -73,7 +73,7 @@ export default function SourcesDialog() {
     }
 
     const filteredSources = sources.filter(source =>
-        source.nickname.toLowerCase().includes(search.toLowerCase())
+        source.nickName.toLowerCase().includes(search.toLowerCase())
     )
 
     return (
@@ -100,7 +100,7 @@ export default function SourcesDialog() {
                         <div key={source.id} className="flex border-[1px] border-gray-200 rounded-md p-5 justify-between">
                             <div className="flex items-center gap-2">
                                 <PiFile size={20} />
-                                <p className="text-sm">{source.nickname}</p>
+                                <p className="text-sm">{source.nickName}</p>
                                 <p className="text-xs px-1 py-0.5 bg-gray-200 rounded-md">{source.isIndexed ? 'Indexed' : 'Not indexed'}</p>
                             </div>
                             <Button variant="destructive" size="icon" onClick={() => handleDelete(source.id)}><PiTrash /></Button>

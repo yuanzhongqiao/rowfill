@@ -149,10 +149,10 @@ export async function getUploadUrlForSource(filename: string) {
     }
 }
 
-export async function addSource(name: string, filename: string) {
+export async function addSource(nickName: string, fileName: string, fileType: string) {
     const { organizationId } = await getAuthToken()
     await prisma.source.create({
-        data: { nickname: name, filename, organizationId },
+        data: { nickName, fileName, fileType, organizationId },
     })
 
     return

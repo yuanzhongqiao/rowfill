@@ -22,7 +22,7 @@ export const fetchSheet = async (id: string) => {
             source: {
                 select: {
                     id: true,
-                    nickname: true
+                    nickName: true
                 }
             }
         }
