@@ -10,6 +10,9 @@ export async function fetchSheets() {
     const { organizationId, userId } = await getAuthToken()
     return await prisma.sheet.findMany({
         where: { organizationId, createdById: userId },
+        orderBy: {
+            createdAt: "desc"
+        }
     })
 }
 
@@ -136,7 +139,7 @@ export async function fetchSources() {
 
 export async function getUploadUrlForSource(filename: string) {
     const { organizationId } = await getAuthToken()
-    if(!organizationId) {
+    if (!organizationId) {
         throw new Error('User not authenticated')
     }
     const file = await getPresignedUrlForUpload(filename)

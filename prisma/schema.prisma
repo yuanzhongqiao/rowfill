@@ -12,6 +12,23 @@ enum Role {
   MEMBER
 }
 
+enum ColumnTaskType {
+  GENERATION
+  EXTRACTION
+  CLASSIFICATION
+  OTHERS
+}
+
+enum ColumnDataType {
+  TEXT
+  NUMBER
+  DATE
+  TIME
+  BOOLEAN
+  LIST
+  OBJECT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -84,7 +101,10 @@ model SheetColumn {
   sheetId      String
   sheet        Sheet              @relation(fields: [sheetId], references: [id])
   name         String
-  type         String
+  instruction  String
+  taskType     ColumnTaskType
+  dataType     ColumnDataType
+  defaultValue String             @default("N/A")
   columnValues SheetColumnValue[]
 }
 

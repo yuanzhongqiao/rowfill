@@ -1,16 +1,19 @@
 "use client"
 
 import { Sheet, SheetColumn, SheetColumnValue, SheetSource, Source } from "@prisma/client"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { fetchSheet, updateSheetName } from "./actions"
-import { PiPlus, PiSpinner, PiTrash } from "react-icons/pi"
+import { deleteColumnFromSheet, fetchSheet, updateSheetName } from "./actions"
+import { PiDownload, PiList, PiListBold, PiPencil, PiPlay, PiPlayBold, PiPlayFill, PiPlus, PiSpinner, PiTrash } from "react-icons/pi"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import SourcesDialog from "./sourcesDialog"
 import { useSheetStore } from "../../shared"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import ColumnDialog from "./columnDialog"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SheetPage() {
     const { slug } = useParams()
@@ -20,7 +23,11 @@ export default function SheetPage() {
     const [columnValues, setColumnValues] = useState<{ [key: string]: SheetColumnValue }>({})
     const [nameEdit, setNameEdit] = useState(false)
     const [sourcesDialogOpen, setSourcesDialogOpen] = useState(false)
+    const [columnDialogOpen, setColumnDialogOpen] = useState(false)
     const { setDueForRefresh } = useSheetStore()
+    const [columnDialogData, setColumnDialogData] = useState<SheetColumn | null>(null)
+    const router = useRouter()
+    const { toast } = useToast()
 
     useEffect(() => {
         fetchData()
@@ -59,25 +66,101 @@ export default function SheetPage() {
         setDueForRefresh(sheet.id)
     }
 
+    const handleDeleteColumn = async (columnId: string) => {
+        try {
+            await deleteColumnFromSheet(sheet.id, columnId)
+            await fetchData()
+            toast({
+                title: "Column Deleted",
+                description: "The column has been deleted from the sheet",
+            })
+        } catch (error) {
+            console.error(error)
+            toast({
+                title: "Error",
+                description: "An error occurred while deleting the column",
+                variant: "destructive",
+            })
+        }
+    }
+
+    const handleDeleteSheet = async () => {
+        // await deleteSheet(sheet.id)
+        router.push("/console")
+        setDueForRefresh(sheet.id)
+    }
+
     return (
         <div className="h-full w-full" onClick={() => handleNameEdit()}>
             <div className="w-full border-b-[1px] border-gray-200 h-[50px] flex justify-between items-center px-5">
                 <div>
-                    {nameEdit ? <Input className="w-[250px]" placeholder="Enter a name" value={sheet.name} onKeyDown={(e) => e.key === 'Enter' && handleNameEdit()} onClick={(e) => e.stopPropagation()} onChange={(e) => setSheet({ ...sheet, name: e.target.value })} /> : <p onDoubleClick={() => setNameEdit(true)} className="text-gray-700 font-medium">{sheet.name}</p>}
+                    {nameEdit ? (
+                        <Input
+                            className="w-[250px]"
+                            placeholder="Enter a name"
+                            value={sheet.name}
+                            onKeyDown={(e) => e.key === 'Enter' && handleNameEdit()}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => setSheet({ ...sheet, name: e.target.value })}
+                        />
+                    ) : (
+                        <p onDoubleClick={() => setNameEdit(true)} className="text-gray-700 font-medium">
+                            {sheet.name}
+                        </p>
+                    )}
                 </div>
-                <div>
-                    <Button variant="destructive" size="icon" onClick={() => setNameEdit(false)}><PiTrash /></Button>
+                <div className="flex gap-2">
+                    <Button>
+                        <PiPlay />
+                        Run All
+                    </Button>
+                    <Button>
+                        <PiDownload />
+                        Export as CSV
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <PiList />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                                <PiTrash /> Delete Sheet
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Source</TableHead>
+                        <TableHead className="border-r-[1px] border-gray-200">Source</TableHead>
                         {columns.map((column) => (
-                            <TableHead key={column.id}>{column.name}</TableHead>
+                            <TableHead key={column.id} className="border-r-[1px] border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    {column.name}
+                                    <div className="flex items-center gap-1">
+                                        <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiListBold className="text-black" /></button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={() => { setColumnDialogData(column); setColumnDialogOpen(true) }}>
+                                                    <PiPencil /> Edit Column
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDeleteColumn(column.id)}>
+                                                    <PiTrash className="text-red-500" /> Delete Column
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
+                            </TableHead>
                         ))}
                         <TableHead className="bg-gray-100">
-                            <button className="flex items-center gap-2 hover:underline">
+                            <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2 hover:underline">
                                 <PiPlus />Add Column
                             </button>
                         </TableHead>
@@ -86,12 +169,12 @@ export default function SheetPage() {
                 <TableBody>
                     {sources.map((source) => (
                         <TableRow key={source.id}>
-                            <TableCell className="bg-gray-100">{source.source.nickname}</TableCell>
+                            <TableCell className="border-r-[1px] border-gray-200">{source.source.nickname}</TableCell>
                             {columns.map((column) => (
-                                <TableCell key={`${source.id}_${column.id}`}>{columnValues[`${source.id}_${column.id}`].value || "N/A"}</TableCell>
+                                <TableCell className="border-r-[1px] border-gray-200" key={`${source.id}_${column.id}`}>{columnValues[`${source.id}_${column.id}`].value || "N/A"}</TableCell>
                             ))}
                             <TableCell className="bg-gray-100">
-                                <button className="flex items-center gap-2">
+                                <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2">
                                     <PiPlus />
                                     Add Column
                                 </button>
@@ -99,7 +182,7 @@ export default function SheetPage() {
                         </TableRow>
                     ))}
                     <TableRow>
-                        <TableCell className="bg-gray-100">
+                        <TableCell className="bg-gray-100 border-r-[1px] border-gray-200">
                             <Dialog open={sourcesDialogOpen} onOpenChange={setSourcesDialogOpen}>
                                 <DialogTrigger asChild>
                                     <button className="flex items-center gap-2 hover:underline">
@@ -112,10 +195,13 @@ export default function SheetPage() {
                                 </DialogContent>
                             </Dialog>
                         </TableCell>
-                        <TableCell colSpan={columns.length - 1}></TableCell>
+                        <TableCell colSpan={columns.length + 1} className="bg-gray-50"></TableCell>
                     </TableRow>
                 </TableBody>
             </Table>
+            <Dialog open={columnDialogOpen} onOpenChange={(open) => { setColumnDialogOpen(open); setColumnDialogData(null) }}>
+                <ColumnDialog open={columnDialogOpen} defaultData={columnDialogData} sheetId={sheet.id} onSubmit={() => { fetchData(); setColumnDialogOpen(false); setColumnDialogData(null) }} />
+            </Dialog>
         </div>
     )
 }

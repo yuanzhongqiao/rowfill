@@ -1,24 +1,24 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { signupUser } from './actions'
-import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
-import { PiSpinner } from 'react-icons/pi'
-import Link from 'next/link'
+import { signupUser } from "./actions"
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { PiSpinner } from "react-icons/pi"
+import Link from "next/link"
 
 const signupSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, "Name is required"),
   email: z.string()
-    .min(1, 'Email is required')
-    .email('Invalid email format'),
-  organizationName: z.string().min(1, 'Organization name is required'),
+    .min(1, "Email is required")
+    .email("Invalid email format"),
+  organizationName: z.string().min(1, "Organization name is required"),
 })
 
 type SignupFormData = z.infer<typeof signupSchema>
@@ -28,9 +28,9 @@ export default function SignupPage() {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      organizationName: '',
+      name: "",
+      email: "",
+      organizationName: "",
     }
   })
   const router = useRouter()
@@ -41,7 +41,7 @@ export default function SignupPage() {
     try {
       const result = await signupUser(data)
       if (result.success) {
-        router.push('/auth/login')
+        router.push("/auth/login")
       } else {
         toast({
           title: "Error",
@@ -96,7 +96,7 @@ export default function SignupPage() {
               </FormItem>
             )}
           />
-          <Button className='w-full' type="submit" disabled={isSubmitting}>
+          <Button className="w-full" type="submit" disabled={isSubmitting}>
             {isSubmitting && <PiSpinner className="mr-2 h-4 w-4 animate-spin" />}
             Sign Up
           </Button>

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import SettingsPage from './settingsDialog'
 import SourcesDialog from './sourcesDialog'
 import { useSheetStore } from './shared'
+import SearchDialog from './searchDialog'
 
 export default function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false)
@@ -57,9 +58,15 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
       <div className="w-[250px] border-r-[1px] border-gray-200 p-4">
         <div className="flex flex-col gap-2 items-stretch justify-between h-full">
           <div className="flex flex-col gap-2">
-            <Button variant="outline" className="w-full mb-1 flex items-center justify-start gap-2">
-              <PiMagnifyingGlass /> Search Documents
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full mb-1 flex items-center justify-start gap-2">
+                  <PiMagnifyingGlass /> Search Documents
+                </Button>
+              </DialogTrigger>
+              <SearchDialog />
+            </Dialog>
+
             <Button className="w-full mb-1 flex items-center justify-start gap-2" onClick={() => setIsAddProjectOpen(true)}>
               <PiPlusBold /> Add New Sheet
             </Button>
