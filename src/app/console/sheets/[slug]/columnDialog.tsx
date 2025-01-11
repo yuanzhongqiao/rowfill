@@ -21,7 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { PiPlus, PiSpinner } from "react-icons/pi"
+import { PiFloppyDisk, PiSpinner } from "react-icons/pi"
 import { addColumnToSheet, updateColumnToSheet } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { useEffect, useState } from "react"
@@ -198,7 +198,7 @@ export default function ColumnDialog({ open, defaultData, sheetId, onSubmit }: {
                         )}
                     />
                     <DialogFooter>
-                        <Button type="submit" disabled={loading}>{loading ? <PiSpinner className="animate-spin" /> : <PiPlus />} {loading ? "Saving" : "Save"} Column</Button>
+                        <Button type="submit" disabled={loading}>{loading ? <PiSpinner className="animate-spin" /> : <PiFloppyDisk />} {loading ? "Saving" : "Save"} Column</Button>
                     </DialogFooter>
                 </form>
             </Form>

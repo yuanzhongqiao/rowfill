@@ -24,7 +24,7 @@ export async function indexSource(sourceId: string) {
 
             const imageFile = await getPresignedUrlForGet(image)
             const referenceText = await imageToMarkdown(imageFile.url)
-            const indexId = await indexTextToVectorDB(referenceText, source.organizationId)
+            const indexId = await indexTextToVectorDB(referenceText, source.organizationId, source.id)
 
             await prisma.indexedSource.create({
                 data: {
@@ -41,7 +41,7 @@ export async function indexSource(sourceId: string) {
     // Image
     if (source.fileType === "image/jpeg" || source.fileType === "image/jpg" || source.fileType === "image/png") {
         const referenceText = await imageToMarkdown(file.url)
-        const indexId = await indexTextToVectorDB(referenceText, source.organizationId)
+        const indexId = await indexTextToVectorDB(referenceText, source.organizationId, source.id)
         await prisma.indexedSource.create({
             data: {
                 indexId: indexId,
@@ -57,7 +57,7 @@ export async function indexSource(sourceId: string) {
     if (source.fileType === "audio/mp3") {
         const transcription = await transcribeAudio(file.url)
 
-        const indexId = await indexTextToVectorDB(transcription, source.organizationId)
+        const indexId = await indexTextToVectorDB(transcription, source.organizationId, source.id)
 
         await prisma.indexedSource.create({
             data: {

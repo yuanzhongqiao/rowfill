@@ -321,3 +321,35 @@ export async function deleteColumnFromSheet(sheetId: string, columnId: string) {
 
     return
 }
+
+
+export async function runColumnSourceTask(sheetId: string, columnId: string, sourceId: string) {
+    const { organizationId, userId } = await getAuthToken()
+
+    const sheet = await prisma.sheet.findFirstOrThrow({
+        where: {
+            id: sheetId,
+            organizationId,
+            createdById: userId
+        }
+    })
+
+    const column = await prisma.sheetColumn.findFirstOrThrow({
+        where: {
+            id: columnId,
+            sheetId: sheet.id,
+            organizationId
+        }
+    })
+
+    const source = await prisma.sheetSource.findFirstOrThrow({
+        where: {
+            id: sourceId,
+            sheetId: sheet.id,
+            organizationId
+        }
+    })
+
+    
+
+}

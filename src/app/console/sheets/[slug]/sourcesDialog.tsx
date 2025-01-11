@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { SheetSource, Source } from "@prisma/client"
+import { Source } from "@prisma/client"
 import { useEffect, useState } from "react"
-import { PiCheck, PiFile, PiPlus, PiX } from "react-icons/pi"
+import { PiCheck, PiFile, PiFloppyDisk, PiX } from "react-icons/pi"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { fetchSources } from "../../actions"
@@ -13,7 +13,6 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
     const [sources, setSources] = useState<Source[]>([])
     const [search, setSearch] = useState("")
     const [selectedSources, setSelectedSources] = useState<string[]>([])
-    const { toast } = useToast()
 
     useEffect(() => {
         fetchData()
@@ -65,7 +64,7 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
                 {sources.length === 0 || filteredSources.length === 0 && <div className="flex items-center justify-center h-[350px] text-muted-foreground">No sources found</div>}
             </ScrollArea>
             <DialogFooter className="flex justify-end mt-5">
-                <Button disabled={selectedSources.length === 0} onClick={handleAdd}><PiPlus /> Save</Button>
+                <Button disabled={selectedSources.length === 0} onClick={handleAdd}><PiFloppyDisk /> Save</Button>
             </DialogFooter>
         </div>
     )

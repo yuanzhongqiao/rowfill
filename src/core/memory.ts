@@ -15,7 +15,7 @@ async function createTenantIfNotExists(client: WeaviateClient, collectionName: s
 }
 
 
-export async function indexTextToVectorDB(text: string, organizationId: string) {
+export async function indexTextToVectorDB(text: string, organizationId: string, sourceId: string) {
 
     const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
         authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
@@ -36,7 +36,7 @@ export async function indexTextToVectorDB(text: string, organizationId: string) 
 
     const result = await collection.data.insert({
         properties: {
-            text: text
+            source: sourceId
         },
         vector: embedding.data[0].embedding
     })
@@ -45,7 +45,7 @@ export async function indexTextToVectorDB(text: string, organizationId: string) 
 
 }
 
-export async function queryVectorDB(text: string, organizationId: string) {
+export async function queryVectorDB(text: string, organizationId: string, sourceId: string | null = null) {
     const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
         authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
     })
@@ -64,8 +64,28 @@ export async function queryVectorDB(text: string, organizationId: string) {
     })
 
     const result = await collection.query.nearVector(embedding.data[0].embedding, {
-        limit: 1
+        limit: 1,
+        filters: sourceId ? {
+            target: {
+                property: "source"
+            },
+            operator: "Equal",
+            value: sourceId
+        } : undefined
     })
 
     return result.objects[0].uuid
+}
+
+
+export async function deleteVectorIndex(indexId: string, organizationId: string) {
+    const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
+        authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
+    })
+
+    const collection = client.collections.get("Documents").withTenant(organizationId)
+
+    await collection.data.deleteById(indexId)
+
+    return
 }
