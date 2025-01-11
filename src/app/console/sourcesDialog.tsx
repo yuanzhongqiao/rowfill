@@ -89,25 +89,25 @@ export default function SourcesDialog() {
                     ref={fileRef}
                     multiple
                     className="hidden"
-                    accept=".docx,.pdf,.jpeg,.jpg,.png"
+                    accept=".pdf,.jpeg,.jpg,.png,.mp3"
                     onChange={handleFileChange}
                 />
             </div>
             {uploadError && <p className="text-red-500 text-sm mt-2">{uploadError}</p>}
             <ScrollArea className="h-[350px] mt-5">
-                <div className="flex flex-col gap-3 pr-5 py-2">
+                <div className="flex flex-col gap-3 pr-3 py-2">
                     {filteredSources.map((source) => (
                         <div key={source.id} className="flex border-[1px] border-gray-200 rounded-md p-5 justify-between">
                             <div className="flex items-center gap-2">
                                 <PiFile size={20} />
-                                <p className="text-sm">{source.nickName}</p>
-                                <p className="text-xs px-1 py-0.5 bg-gray-200 rounded-md">{source.isIndexed ? 'Indexed' : 'Not indexed'}</p>
+                                <p className="text-sm max-w-[200px] text-ellipsis truncate overflow-hidden">{source.nickName}</p>
+                                <p className="text-xs px-1 py-0.5 bg-gray-200 rounded-md">{source.isIndexed ? 'Indexed' : source.isIndexing ? 'Indexing' : 'Not indexed'}</p>
                             </div>
                             <Button variant="destructive" size="icon" onClick={() => handleDelete(source.id)}><PiTrash /></Button>
                         </div>
                     ))}
                 </div>
-                {sources.length === 0 || filteredSources.length === 0 && <div className="flex items-center justify-center h-[350px] text-muted-foreground">No sources found</div>}
+                {(sources.length === 0 || filteredSources.length === 0) && <div className="flex items-center justify-center h-[300px] text-muted-foreground">No sources found</div>}
             </ScrollArea>
         </div>
     )

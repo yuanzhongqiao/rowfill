@@ -16,7 +16,8 @@ export const fetchSheet = async (id: string) => {
 
     const sources = await prisma.sheetSource.findMany({
         where: {
-            sheetId: sheet.id
+            sheetId: sheet.id,
+            organizationId
         },
         include: {
             source: {
@@ -30,13 +31,15 @@ export const fetchSheet = async (id: string) => {
 
     const columns = await prisma.sheetColumn.findMany({
         where: {
-            sheetId: sheet.id
+            sheetId: sheet.id,
+            organizationId
         }
     })
 
     const values = await prisma.sheetColumnValue.findMany({
         where: {
-            sheetId: sheet.id
+            sheetId: sheet.id,
+            organizationId
         }
     })
 
@@ -94,7 +97,8 @@ export const updateSourceToSheet = async (sourceIds: string[], sheetId: string) 
 
     const sheetSources = await prisma.sheetSource.findMany({
         where: {
-            sheetId: sheet.id
+            sheetId: sheet.id,
+            organizationId
         }
     })
 
@@ -120,13 +124,15 @@ export const updateSourceToSheet = async (sourceIds: string[], sheetId: string) 
             await tx.sheetSource.create({
                 data: {
                     sourceId: source.id,
-                    sheetId: sheet.id
+                    sheetId: sheet.id,
+                    organizationId
                 }
             })
 
             const columns = await tx.sheetColumn.findMany({
                 where: {
-                    sheetId: sheet.id
+                    sheetId: sheet.id,
+                    organizationId
                 }
             })
 
@@ -136,7 +142,8 @@ export const updateSourceToSheet = async (sourceIds: string[], sheetId: string) 
                         sourceId: source.id,
                         columnId: column.id,
                         value: "",
-                        sheetId: sheet.id
+                        sheetId: sheet.id,
+                        organizationId
                     }
                 })
             }
@@ -158,14 +165,16 @@ export const updateSourceToSheet = async (sourceIds: string[], sheetId: string) 
             await tx.sheetSource.deleteMany({
                 where: {
                     sourceId: source.id,
-                    sheetId: sheet.id
+                    sheetId: sheet.id,
+                    organizationId
                 }
             })
 
             await tx.sheetColumnValue.deleteMany({
                 where: {
                     sourceId: source.id,
-                    sheetId: sheet.id
+                    sheetId: sheet.id,
+                    organizationId
                 }
             })
 
@@ -200,6 +209,7 @@ export async function addColumnToSheet(
         const column = await tx.sheetColumn.create({
             data: {
                 sheetId: sheet.id,
+                organizationId,
                 name,
                 instruction,
                 taskType,
@@ -220,7 +230,8 @@ export async function addColumnToSheet(
                     sourceId: source.sourceId,
                     columnId: column.id,
                     value: "",
-                    sheetId: sheet.id
+                    sheetId: sheet.id,
+                    organizationId
                 }
             })
         }
@@ -253,7 +264,8 @@ export async function updateColumnToSheet(
     await prisma.sheetColumn.update({
         where: {
             id: columnId,
-            sheetId: sheet.id
+            sheetId: sheet.id,
+            organizationId
         },
         data: {
             name,
@@ -281,7 +293,8 @@ export async function deleteColumnFromSheet(sheetId: string, columnId: string) {
     const column = await prisma.sheetColumn.findFirstOrThrow({
         where: {
             id: columnId,
-            sheetId: sheetId
+            sheetId: sheetId,
+            organizationId
         }
     })
 
@@ -290,14 +303,16 @@ export async function deleteColumnFromSheet(sheetId: string, columnId: string) {
         await prisma.sheetColumn.delete({
             where: {
                 id: column.id,
-                sheetId: sheet.id
+                sheetId: sheet.id,
+                organizationId
             }
         })
 
         await tx.sheetColumnValue.deleteMany({
             where: {
                 columnId: column.id,
-                sheetId: sheet.id
+                sheetId: sheet.id,
+                organizationId
             }
         })
 

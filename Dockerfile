@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY . /app
 
+RUN apt-get update && apt-get install -y poppler-data && apt-get install -y poppler-utils
+
 RUN npm install -g pnpm
 
 RUN pnpm i

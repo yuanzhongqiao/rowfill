@@ -39,17 +39,22 @@ model User {
   updatedAt     DateTime  @updatedAt
   members       Member[]
   sheets        Sheet[]
+  sources       Source[]
 }
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  apiKey    String   @unique @default(uuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  members   Member[]
-  sheets    Sheet[]
-  sources   Source[]
+  id                String             @id @default(cuid())
+  name              String
+  apiKey            String             @unique @default(uuid())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  members           Member[]
+  sheets            Sheet[]
+  sources           Source[]
+  sheetSources      SheetSource[]
+  sheetColumns      SheetColumn[]
+  sheetColumnValues SheetColumnValue[]
+  indexedSources    IndexedSource[]
 }
 
 model Member {
@@ -77,47 +82,70 @@ model Sheet {
 }
 
 model Source {
-  id             String        @id @default(uuid())
+  id             String          @id @default(uuid())
   fileName       String
   fileType       String
   nickName       String
-  isIndexed      Boolean       @default(false)
+  isIndexed      Boolean         @default(false)
+  isIndexing     Boolean         @default(false)
   organizationId String
-  organization   Organization  @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime      @default(now())
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  uploadedById   String
+  uploadedBy     User            @relation(fields: [uploadedById], references: [id])
+  createdAt      DateTime        @default(now())
   sheets         SheetSource[]
+  indexedSources IndexedSource[]
 }
 
 model SheetSource {
-  id        String             @id @default(uuid())
-  sheetId   String
-  sheet     Sheet              @relation(fields: [sheetId], references: [id])
-  sourceId  String
-  source    Source             @relation(fields: [sourceId], references: [id])
-  rowValues SheetColumnValue[]
+  id             String             @id @default(uuid())
+  sheetId        String
+  sheet          Sheet              @relation(fields: [sheetId], references: [id])
+  sourceId       String
+  source         Source             @relation(fields: [sourceId], references: [id])
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  rowValues      SheetColumnValue[]
 }
 
 model SheetColumn {
-  id           String             @id @default(uuid())
-  sheetId      String
-  sheet        Sheet              @relation(fields: [sheetId], references: [id])
-  name         String
-  instruction  String
-  taskType     ColumnTaskType
-  dataType     ColumnDataType
-  defaultValue String             @default("N/A")
-  columnValues SheetColumnValue[]
+  id             String             @id @default(uuid())
+  sheetId        String
+  sheet          Sheet              @relation(fields: [sheetId], references: [id])
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id])
+  name           String
+  instruction    String
+  taskType       ColumnTaskType
+  dataType       ColumnDataType
+  defaultValue   String             @default("N/A")
+  columnValues   SheetColumnValue[]
 }
 
 model SheetColumnValue {
-  sheetId  String
-  sheet    Sheet       @relation(fields: [sheetId], references: [id])
-  columnId String
-  column   SheetColumn @relation(fields: [columnId], references: [id])
-  value    String
-  misc     Json?
-  sourceId String
-  source   SheetSource @relation(fields: [sourceId], references: [id])
+  sheetId        String
+  sheet          Sheet        @relation(fields: [sheetId], references: [id])
+  columnId       String
+  column         SheetColumn  @relation(fields: [columnId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  value          String
+  misc           Json?
+  sourceId       String
+  source         SheetSource  @relation(fields: [sourceId], references: [id])
 
   @@id([columnId, sourceId])
+}
+
+model IndexedSource {
+  id                     String       @id @default(uuid())
+  indexId                String
+  referenceImageFileName String?
+  referenceText          String?
+  sourceId               String
+  source                 Source       @relation(fields: [sourceId], references: [id])
+  organizationId         String
+  organization           Organization @relation(fields: [organizationId], references: [id])
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 }

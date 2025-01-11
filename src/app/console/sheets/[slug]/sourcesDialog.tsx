@@ -13,7 +13,6 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
     const [sources, setSources] = useState<Source[]>([])
     const [search, setSearch] = useState("")
     const [selectedSources, setSelectedSources] = useState<string[]>([])
-    const [sheetSources, setSheetSources] = useState<string[]>([])
     const { toast } = useToast()
 
     useEffect(() => {
@@ -24,7 +23,7 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
         const fetchedSources = await fetchSources()
         const fetchedSheetSources = await fetchSheetSources(sheetId)
         setSources(fetchedSources)
-        setSheetSources(fetchedSheetSources.map(source => source.sourceId))
+        setSelectedSources(fetchedSheetSources.map(source => source.sourceId))
     }
 
     const handleAdd = async () => {
@@ -56,10 +55,10 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
                         <div key={source.id} className="flex border-[1px] border-gray-200 rounded-md p-5 justify-between">
                             <div className="flex items-center gap-2">
                                 <PiFile size={20} />
-                                <p className="text-sm">{source.nickName}</p>
-                                <p className="text-xs px-1 py-0.5 bg-gray-200 rounded-md">{source.isIndexed ? "Indexed" : "Not indexed"}</p>
+                                <p className="text-sm max-w-[200px] text-ellipsis truncate overflow-hidden">{source.nickName}</p>
+                                <p className="text-xs px-1 py-0.5 bg-gray-200 rounded-md">{source.isIndexed ? "Indexed" : source.isIndexing ? "Indexing" : "Not indexed"}</p>
                             </div>
-                            <Button disabled={!source.isIndexed} size="icon" onClick={() => handleSelect(source.id)}>{selectedSources.includes(source.id) || sheetSources.includes(source.id) ? <PiX /> : <PiCheck />}</Button>
+                            <Button disabled={!source.isIndexed} size="icon" onClick={() => handleSelect(source.id)}>{selectedSources.includes(source.id) ? <PiX /> : <PiCheck />}</Button>
                         </div>
                     ))}
                 </div>
