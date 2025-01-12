@@ -363,7 +363,7 @@ export async function deleteSheet(sheetId: string) {
 }
 
 
-export async function runColumnSourceTask(sheetId: string, columnId: string, sourceId: string) {
+export async function runColumnSourceTask(sheetId: string, sheetColumnId: string, sheetSourceId: string) {
     const { organizationId, userId } = await getAuthToken()
 
     const sheet = await prisma.sheet.findFirstOrThrow({
@@ -376,15 +376,15 @@ export async function runColumnSourceTask(sheetId: string, columnId: string, sou
 
     const column = await prisma.sheetColumn.findFirstOrThrow({
         where: {
-            id: columnId,
+            id: sheetColumnId,
             sheetId: sheet.id,
             organizationId
         }
     })
 
-    const source = await prisma.sheetSource.findFirstOrThrow({
+    const sheetSource = await prisma.sheetSource.findFirstOrThrow({
         where: {
-            id: sourceId,
+            id: sheetSourceId,
             sheetId: sheet.id,
             organizationId
         }
@@ -392,7 +392,7 @@ export async function runColumnSourceTask(sheetId: string, columnId: string, sou
 
     const sourceIndexes = await prisma.indexedSource.findMany({
         where: {
-            sourceId: source.id,
+            sourceId: sheetSource.sourceId,
             organizationId
         }
     })
@@ -406,7 +406,7 @@ export async function runColumnSourceTask(sheetId: string, columnId: string, sou
     let sourceIndexId = ""
 
     if (sourceIndexes.length > 1) {
-        const foundIndex = await queryVectorDB(column.instruction, organizationId, sourceId)
+        const foundIndex = await queryVectorDB(column.instruction, organizationId, sheetSource.sourceId)
         const sourceIndex = sourceIndexes.find(index => index.indexId === foundIndex)
         if (sourceIndex) {
             data = sourceIndex.referenceText || ""
@@ -438,8 +438,8 @@ export async function runColumnSourceTask(sheetId: string, columnId: string, sou
 
     await prisma.sheetColumnValue.updateMany({
         where: {
-            columnId: column.id,
-            sourceId: source.id,
+            columnId: sheetColumnId,
+            sourceId: sheetSourceId,
             sheetId: sheet.id,
             organizationId
         },

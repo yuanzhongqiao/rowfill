@@ -4,7 +4,7 @@ import { Sheet as SheetType, SheetColumn, SheetColumnValue, SheetSource, Source 
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { deleteColumnFromSheet, deleteSheet, fetchSheet, runColumnSourceTask, updateSheetName } from "./actions"
-import { PiArrowUpRight, PiDownload, PiList, PiListBold, PiPencil, PiPlay, PiPlayFill, PiPlus, PiSpinner, PiTrash } from "react-icons/pi"
+import { PiArrowUpRight, PiDownload, PiList, PiListBold, PiPencil, PiPlay, PiPlayFill, PiPlus, PiSpinner, PiTrash, PiWarning } from "react-icons/pi"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -92,17 +92,23 @@ export default function SheetPage() {
 
 
     const handleRunColumnSourceTask = async (columnId: string, sourceId: string) => {
-        setColumnValues(produce((draft) => {
-            draft[`${sourceId}_${columnId}`]["value"] = "Loading"
-        }))
-        const result = await runColumnSourceTask(sheet.id, columnId, sourceId)
-        setColumnValues(produce((draft) => {
-            draft[`${sourceId}_${columnId}`]["value"] = result.answer
-            draft[`${sourceId}_${columnId}`]["sourceIndexId"] = result.sourceIndexId
-        }))
-        setRunAlert(produce((draft) => {
-            draft.done += 1
-        }))
+        try {
+            setColumnValues(produce((draft) => {
+                draft[`${sourceId}_${columnId}`]["value"] = "Loading"
+            }))
+            const result = await runColumnSourceTask(sheet.id, columnId, sourceId)
+            setColumnValues(produce((draft) => {
+                draft[`${sourceId}_${columnId}`]["value"] = result.answer
+                draft[`${sourceId}_${columnId}`]["sourceIndexId"] = result.sourceIndexId
+            }))
+            setRunAlert(produce((draft) => {
+                draft.done += 1
+            }))
+        } catch (err) {
+            setColumnValues(produce((draft) => {
+                draft[`${sourceId}_${columnId}`]["value"] = "Error"
+            }))
+        }
     }
 
     const handleRunAll = async () => {
@@ -268,6 +274,7 @@ export default function SheetPage() {
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 {columnValue.value === "Loading" && <PiSpinner className="animate-spin" />}
+                                                {columnValue.value === "Error" && <PiWarning className="text-red-500" />}
                                                 {columnValue.value || "N/A"}
                                             </div>
                                             <Sheet>
