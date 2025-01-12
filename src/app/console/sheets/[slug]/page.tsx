@@ -19,12 +19,13 @@ import { produce } from "immer"
 import { Alert } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import SourceIndexComponent from "./sourceIndex"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function SheetPage() {
     const { slug } = useParams()
     const [sheet, setSheet] = useState<SheetType | null>(null)
-    const [sources, setSources] = useState<(SheetSource & { source: Source })[]>([])
-    const [columns, setColumns] = useState<SheetColumn[]>([])
+    const [sheetSources, setSheetSources] = useState<(SheetSource & { source: Source })[]>([])
+    const [sheetColumns, setSheetColumns] = useState<SheetColumn[]>([])
     const [columnValues, setColumnValues] = useState<{ [key: string]: SheetColumnValue }>({})
     const [nameEdit, setNameEdit] = useState(false)
     const [sourcesDialogOpen, setSourcesDialogOpen] = useState(false)
@@ -44,8 +45,8 @@ export default function SheetPage() {
             try {
                 const data = await fetchSheet(slug)
                 setSheet(data.sheet)
-                setSources(data.sources as (SheetSource & { source: Source })[])
-                setColumns(data.columns)
+                setSheetSources(data.sources as (SheetSource & { source: Source })[])
+                setSheetColumns(data.columns)
                 setColumnValues(data.columnValues)
             } catch (error) {
                 console.error("Error fetching sheet data:", error)
@@ -99,7 +100,7 @@ export default function SheetPage() {
             const result = await runColumnSourceTask(sheet.id, columnId, sourceId)
             setColumnValues(produce((draft) => {
                 draft[`${sourceId}_${columnId}`]["value"] = result.answer
-                draft[`${sourceId}_${columnId}`]["sourceIndexId"] = result.sourceIndexId
+                draft[`${sourceId}_${columnId}`]["indexedSourceId"] = result.indexedSourceId
             }))
             setRunAlert(produce((draft) => {
                 draft.done += 1
@@ -117,13 +118,13 @@ export default function SheetPage() {
             const promises = []
 
             setRunAlert(produce((draft) => {
-                draft.count = columns.length * sources.length
+                draft.count = sheetColumns.length * sheetSources.length
                 draft.open = true
                 draft.done = 0
             }))
 
-            for (const column of columns) {
-                for (const source of sources) {
+            for (const column of sheetColumns) {
+                for (const source of sheetSources) {
                     promises.push(handleRunColumnSourceTask(column.id, source.id))
                 }
             }
@@ -150,11 +151,11 @@ export default function SheetPage() {
             const promises = []
 
             setRunAlert(produce((draft) => {
-                draft.count = sources.length
+                draft.count = sheetSources.length
                 draft.open = true
                 draft.done = 0
             }))
-            for (const source of sources) {
+            for (const source of sheetSources) {
                 promises.push(handleRunColumnSourceTask(columnId, source.id))
             }
             await Promise.all(promises)
@@ -231,7 +232,7 @@ export default function SheetPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead className="border-r-[1px] bg-gray-100 border-gray-200">Source</TableHead>
-                        {columns.map((column) => (
+                        {sheetColumns.map((column) => (
                             <TableHead key={column.id} className="border-r-[1px] border-gray-200">
                                 <div className="flex items-center justify-between">
                                     {column.name}
@@ -262,10 +263,10 @@ export default function SheetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {sources.map((source) => (
+                    {sheetSources.map((source) => (
                         <TableRow key={source.id}>
                             <TableCell className="border-r-[1px] border-gray-200 bg-gray-50">{source.source.nickName}</TableCell>
-                            {columns.map((column) => {
+                            {sheetColumns.map((column) => {
 
                                 const columnValue = columnValues[`${source.id}_${column.id}`]
 
@@ -275,7 +276,7 @@ export default function SheetPage() {
                                             <div className="flex items-center gap-2">
                                                 {columnValue.value === "Loading" && <PiSpinner className="animate-spin" />}
                                                 {columnValue.value === "Error" && <PiWarning className="text-red-500" />}
-                                                {columnValue.value || "N/A"}
+                                                {columnValue.value || "No value"}
                                             </div>
                                             <Sheet>
                                                 <SheetTrigger asChild>
@@ -283,9 +284,9 @@ export default function SheetPage() {
                                                         <PiArrowUpRight className="text-black" />
                                                     </button>
                                                 </SheetTrigger>
-                                                <SheetContent>
+                                                <SheetContent className="h-screen overflow-y-auto">
                                                     <SheetHeader>
-                                                        <SheetTitle>Column Value</SheetTitle>
+                                                        <SheetTitle>{column.name}</SheetTitle>
                                                     </SheetHeader>
                                                     <div className="mt-4 space-y-4">
                                                         <div className="p-4 rounded-lg border">
@@ -293,7 +294,7 @@ export default function SheetPage() {
                                                             <p>{columnValues[`${source.id}_${column.id}`].value}</p>
                                                         </div>
                                                         <Separator />
-                                                        {columnValue.sourceIndexId && <SourceIndexComponent sourceIndexId={columnValue.sourceIndexId} />}
+                                                        {columnValue.indexedSourceId && <SourceIndexComponent sourceIndexId={columnValue.indexedSourceId} />}
                                                     </div>
                                                 </SheetContent>
                                             </Sheet>
@@ -323,7 +324,7 @@ export default function SheetPage() {
                                 </DialogContent>
                             </Dialog>
                         </TableCell>
-                        <TableCell colSpan={columns.length + 1} className="bg-gray-50"></TableCell>
+                        <TableCell colSpan={sheetColumns.length + 1} className="bg-gray-50"></TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

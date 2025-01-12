@@ -3,6 +3,8 @@ import { getSourceIndex } from "./actions"
 import { IndexedSource, Source } from "@prisma/client"
 import { PiDownload } from "react-icons/pi"
 import { Button } from "@/components/ui/button"
+import ReactMarkdown from "react-markdown"
+import { stripCodeBlockBackTicks } from "@/lib/utils"
 
 export default function SourceIndexComponent({ sourceIndexId }: { sourceIndexId: string }) {
 
@@ -15,8 +17,10 @@ export default function SourceIndexComponent({ sourceIndexId }: { sourceIndexId:
     }
 
     useEffect(() => {
-        fetchData()
-    }, [])
+        if (sourceIndexId) {
+            fetchData()
+        }
+    }, [sourceIndexId])
 
 
     if (!sourceIndex) {
@@ -26,12 +30,14 @@ export default function SourceIndexComponent({ sourceIndexId }: { sourceIndexId:
     return (
         <div className="flex flex-col gap-4">
             <div>
-                <h1>Reference Text</h1>
-                <p>{sourceIndex.referenceText}</p>
+                <h1 className="font-bold text-lg">Reference Text</h1>
+                <div className="mdc">
+                    <ReactMarkdown>{stripCodeBlockBackTicks(sourceIndex.referenceText || "No reference text")}</ReactMarkdown>
+                </div>
             </div>
             <div>
-                <h1>Reference Image</h1>
-                <Button variant="outline" onClick={() => {
+                <h1 className="font-bold text-lg">Reference Image</h1>
+                <Button variant="outline" className="mt-2" onClick={() => {
                     if (sourceIndex.referenceImageFileName) {
                         window.open(sourceIndex.referenceImageFileName, '_blank')
                     }
@@ -41,8 +47,8 @@ export default function SourceIndexComponent({ sourceIndexId }: { sourceIndexId:
                 </Button>
             </div>
             <div>
-                <h1>Source File</h1>
-                <Button variant="outline" onClick={() => {
+                <h1 className="font-bold text-lg">Source File</h1>
+                <Button variant="outline" className="mt-2" onClick={() => {
                     if (sourceIndex.source.fileName) {
                         window.open(sourceIndex.source.fileName, '_blank')
                     }

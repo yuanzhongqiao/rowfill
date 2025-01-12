@@ -7,6 +7,7 @@ import { sendMessageToSearch } from "./actions";
 import ReactMarkdown from "react-markdown"
 import { produce } from "immer"
 import Image from "next/image";
+import { stripCodeBlockBackTicks } from "@/lib/utils";
 
 export default function SearchDialog({ open }: { open: boolean }) {
 
@@ -131,7 +132,7 @@ export default function SearchDialog({ open }: { open: boolean }) {
                                                     </DialogHeader>
                                                     <ScrollArea className="h-[400px] pr-5">
                                                         <div className="mdc">
-                                                            <ReactMarkdown>{source.referenceText}</ReactMarkdown>
+                                                            <ReactMarkdown>{stripCodeBlockBackTicks(source.referenceText || "No reference text")}</ReactMarkdown>
                                                         </div>
                                                     </ScrollArea>
                                                 </DialogContent>

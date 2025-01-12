@@ -68,17 +68,17 @@ model Member {
 }
 
 model Sheet {
-  id             String             @id @default(uuid())
-  name           String
-  createdById    String
-  createdBy      User               @relation(fields: [createdById], references: [id])
-  organizationId String
-  organization   Organization       @relation(fields: [organizationId], references: [id])
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  sources        SheetSource[]
-  columns        SheetColumn[]
-  columnValues   SheetColumnValue[]
+  id                String             @id @default(uuid())
+  name              String
+  createdById       String
+  createdBy         User               @relation(fields: [createdById], references: [id])
+  organizationId    String
+  organization      Organization       @relation(fields: [organizationId], references: [id])
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  sheetSources      SheetSource[]
+  sheetColumns      SheetColumn[]
+  sheetColumnValues SheetColumnValue[]
 }
 
 model Source {
@@ -107,6 +107,8 @@ model SheetSource {
   organizationId String
   organization   Organization       @relation(fields: [organizationId], references: [id])
   rowValues      SheetColumnValue[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 }
 
 model SheetColumn {
@@ -121,32 +123,38 @@ model SheetColumn {
   dataType       ColumnDataType
   defaultValue   String             @default("N/A")
   columnValues   SheetColumnValue[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 }
 
 model SheetColumnValue {
-  sheetId        String
-  sheet          Sheet        @relation(fields: [sheetId], references: [id])
-  columnId       String
-  column         SheetColumn  @relation(fields: [columnId], references: [id])
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  value          String?
-  sourceIndexId  String?
-  sourceId       String
-  source         SheetSource  @relation(fields: [sourceId], references: [id])
+  sheetId         String
+  sheet           Sheet          @relation(fields: [sheetId], references: [id])
+  sheetColumnId   String
+  sheetColumn     SheetColumn    @relation(fields: [sheetColumnId], references: [id])
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  value           String?
+  sheetSourceId   String
+  sheetSource     SheetSource    @relation(fields: [sheetSourceId], references: [id])
+  indexedSourceId String?
+  indexedSource   IndexedSource? @relation(fields: [indexedSourceId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  @@id([columnId, sourceId])
+  @@id([sheetColumnId, sheetSourceId])
 }
 
 model IndexedSource {
-  id                     String       @id @default(uuid())
+  id                     String             @id @default(uuid())
   indexId                String
   referenceImageFileName String?
   referenceText          String?
   sourceId               String
-  source                 Source       @relation(fields: [sourceId], references: [id])
+  source                 Source             @relation(fields: [sourceId], references: [id])
   organizationId         String
-  organization           Organization @relation(fields: [organizationId], references: [id])
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
+  organization           Organization       @relation(fields: [organizationId], references: [id])
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  sheetColumnValues      SheetColumnValue[]
 }
