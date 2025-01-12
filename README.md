@@ -1,11 +1,11 @@
 <div align="center">
-  <h1>Parseta</h1>
+  <h1>Rowfill</h1>
   <p>Open-source document processing platform built for knowledge workers</p>
 </div>
 
-## 👋 Welcome to Parseta
+## 👋 Welcome to Rowfill
 
-Parseta helps extract, analyze, and process data from complex documents, images, PDFs and more with advanced AI capabilities.
+Rowfill helps extract, analyze, and process data from complex documents, images, PDFs and more with advanced AI capabilities.
 
 ## ✨ Features
 
@@ -27,7 +27,7 @@ Parseta helps extract, analyze, and process data from complex documents, images,
 
 ## 📚 Documentation
 
-Visit our [documentation](https://docs.parseta.ai) for:
+Visit our [documentation](https://docs.rowfill.com) for:
 - Detailed integration guides
 - API reference
 - Best practices
@@ -50,9 +50,9 @@ This project is licensed under the AGPLV3 License - see the [LICENSE](LICENSE) f
 
 ## 💬 Community & Support
 
-- [Discord Community](https://discord.gg/parseta)
-- [GitHub Issues](https://github.com/ParsetaHQ/parseta/issues)
-- [Email Support](mailto:hello@parseta.ai)
+- [Discord Community](https://discord.gg/rowfill)
+- [GitHub Issues](https://github.com/RowfillHQ/rowfill/issues)
+- [Email Support](mailto:hello@rowfill.com)
 
 
 ---

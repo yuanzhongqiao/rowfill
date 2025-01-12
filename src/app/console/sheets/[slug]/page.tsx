@@ -19,7 +19,6 @@ import { produce } from "immer"
 import { Alert } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import SourceIndexComponent from "./sourceIndex"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function SheetPage() {
     const { slug } = useParams()

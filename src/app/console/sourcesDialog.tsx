@@ -30,6 +30,17 @@ export default function SourcesDialog() {
         if (!e.target.files) return
         for (let file of e.target.files) {
             try {
+
+                if (file.size > 104857600) {
+                    toast({
+                        title: 'File too large',
+                        description: `The file ${file.name} is too large. Please upload a file smaller than 100MB.`,
+                        variant: 'destructive',
+                    })
+                    setUploadError(`The file ${file.name} is too large. Please upload a file smaller than 100MB`)
+                    continue
+                }
+
                 setUploading(true);
                 // Get presigned URL
                 const { url, filename } = await getUploadUrlForSource(file.name);

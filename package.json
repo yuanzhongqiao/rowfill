@@ -1,5 +1,5 @@
 {
-  "name": "parseta",
+  "name": "rowfill",
   "version": "0.0.1",
   "scripts": {
     "dev:app": "next dev",
