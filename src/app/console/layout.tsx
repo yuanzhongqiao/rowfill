@@ -20,6 +20,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
   const router = useRouter()
   const pathname = usePathname()
   const { dueForRefresh, setDueForRefresh } = useSheetStore()
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   useEffect(() => {
     init()
@@ -58,13 +59,13 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
       <div className="w-[250px] border-r-[1px] border-gray-200 p-4">
         <div className="flex flex-col gap-2 items-stretch justify-between h-full">
           <div className="flex flex-col gap-2">
-            <Dialog>
+            <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full mb-1 flex items-center justify-start gap-2">
                   <PiMagnifyingGlass /> Search Documents
                 </Button>
               </DialogTrigger>
-              <SearchDialog />
+              <SearchDialog open={isSearchOpen} />
             </Dialog>
 
             <Button className="w-full mb-1 flex items-center justify-start gap-2" onClick={() => setIsAddProjectOpen(true)}>

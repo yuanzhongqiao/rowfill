@@ -88,6 +88,7 @@ model Source {
   nickName       String
   isIndexed      Boolean         @default(false)
   isIndexing     Boolean         @default(false)
+  indexRunCount  Int             @default(0)
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [id])
   uploadedById   String
@@ -129,8 +130,8 @@ model SheetColumnValue {
   column         SheetColumn  @relation(fields: [columnId], references: [id])
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
-  value          String
-  misc           Json?
+  value          String?
+  sourceIndexId  String?
   sourceId       String
   source         SheetSource  @relation(fields: [sourceId], references: [id])
 

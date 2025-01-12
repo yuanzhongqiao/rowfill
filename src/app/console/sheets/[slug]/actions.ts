@@ -3,6 +3,9 @@
 import { prisma } from "@/lib/prisma"
 import { getAuthToken } from "@/lib/auth"
 import { ColumnDataType, ColumnTaskType } from "@prisma/client"
+import { queryVectorDB } from "@/core/memory"
+import { generateAnswer } from "@/core/answer"
+import { getPresignedUrlForGet } from "@/lib/file"
 
 export const fetchSheet = async (id: string) => {
     const { organizationId, userId } = await getAuthToken()
@@ -224,18 +227,16 @@ export async function addColumnToSheet(
             }
         })
 
-        for (const source of sheetSources) {
+        for (const sheetSource of sheetSources) {
             await tx.sheetColumnValue.create({
                 data: {
-                    sourceId: source.sourceId,
+                    sourceId: sheetSource.id,
                     columnId: column.id,
-                    value: "",
                     sheetId: sheet.id,
                     organizationId
                 }
             })
         }
-
     })
 
     return
@@ -323,6 +324,45 @@ export async function deleteColumnFromSheet(sheetId: string, columnId: string) {
 }
 
 
+export async function deleteSheet(sheetId: string) {
+    const { organizationId, userId } = await getAuthToken()
+
+    await prisma.$transaction(async (tx) => {
+        await tx.sheetColumnValue.deleteMany({
+            where: {
+                sheetId: sheetId,
+                organizationId
+            }
+        })
+
+        await tx.sheetSource.deleteMany({
+            where: {
+                sheetId: sheetId,
+                organizationId
+            }
+        })
+
+
+        await tx.sheetColumn.deleteMany({
+            where: {
+                sheetId: sheetId,
+                organizationId
+            }
+        })
+
+        await prisma.sheet.delete({
+            where: {
+                id: sheetId,
+                organizationId,
+                createdById: userId
+            }
+        })
+    })
+
+    return
+}
+
+
 export async function runColumnSourceTask(sheetId: string, columnId: string, sourceId: string) {
     const { organizationId, userId } = await getAuthToken()
 
@@ -350,6 +390,95 @@ export async function runColumnSourceTask(sheetId: string, columnId: string, sou
         }
     })
 
-    
+    const sourceIndexes = await prisma.indexedSource.findMany({
+        where: {
+            sourceId: source.id,
+            organizationId
+        }
+    })
 
+    if (sourceIndexes.length === 0) {
+        throw new Error("No source indexes found")
+    }
+
+    let data = ""
+    let refrenceImage = ""
+    let sourceIndexId = ""
+
+    if (sourceIndexes.length > 1) {
+        const foundIndex = await queryVectorDB(column.instruction, organizationId, sourceId)
+        const sourceIndex = sourceIndexes.find(index => index.indexId === foundIndex)
+        if (sourceIndex) {
+            data = sourceIndex.referenceText || ""
+            refrenceImage = sourceIndex.referenceImageFileName || ""
+            sourceIndexId = sourceIndex.indexId || ""
+        }
+    } else {
+        data = sourceIndexes[0].referenceText || ""
+        refrenceImage = sourceIndexes[0].referenceImageFileName || ""
+        sourceIndexId = sourceIndexes[0].indexId || ""
+    }
+
+    let query = `
+    Based on the ${column.instruction}\n
+    ${data ? `From the following data: ${data}\n` : ""}
+    You need to perform the following task:\n
+    ${column.taskType}\n
+    Output the answer in the following format:\n
+    ${column.dataType}\n
+    `
+
+    // Get presigned url for the image
+    if (refrenceImage) {
+        const imageFromBucket = await getPresignedUrlForGet(refrenceImage)
+        refrenceImage = imageFromBucket.url
+    }
+
+    const answer = await generateAnswer(query, refrenceImage ? [refrenceImage] : [])
+
+    await prisma.sheetColumnValue.updateMany({
+        where: {
+            columnId: column.id,
+            sourceId: source.id,
+            sheetId: sheet.id,
+            organizationId
+        },
+        data: {
+            value: answer,
+            sourceIndexId: sourceIndexId
+        }
+    })
+
+    return {
+        answer,
+        sourceIndexId
+    }
+
+}
+
+
+export async function getSourceIndex(sourceIndexId: string) {
+    const { organizationId } = await getAuthToken()
+
+    let sourceIndex = await prisma.indexedSource.findFirstOrThrow({
+        where: {
+            id: sourceIndexId,
+            organizationId
+        },
+        include: {
+            source: true
+        }
+    })
+
+    if (sourceIndex.referenceImageFileName) {
+        const imageFromBucket = await getPresignedUrlForGet(sourceIndex.referenceImageFileName)
+        sourceIndex.referenceImageFileName = imageFromBucket.url
+    }
+
+    if (sourceIndex.source.fileName) {
+        const fileFromBucket = await getPresignedUrlForGet(sourceIndex.source.fileName)
+        sourceIndex.source.fileName = fileFromBucket.url
+    }
+
+    return sourceIndex
 }

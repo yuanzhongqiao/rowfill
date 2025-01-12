@@ -1,10 +1,12 @@
-'use server'
+"use server"
 
-import { prisma } from '@/lib/prisma'
-import { getAuthToken } from '@/lib/auth'
-import { cookies } from 'next/headers'
-import { sign } from 'jsonwebtoken'
-import { getPresignedUrlForGet, getPresignedUrlForUpload } from '@/lib/file'
+import { prisma } from "@/lib/prisma"
+import { getAuthToken } from "@/lib/auth"
+import { cookies } from "next/headers"
+import { sign } from "jsonwebtoken"
+import { getPresignedUrlForGet, getPresignedUrlForUpload } from "@/lib/file"
+import { queryVectorDB } from "@/core/memory"
+import { generateAnswer } from "@/core/answer"
 
 export async function fetchSheets() {
     const { organizationId, userId } = await getAuthToken()
@@ -51,7 +53,7 @@ export async function getCurrentOrganization() {
     })
 
     if (!user) {
-        throw new Error('User not found')
+        throw new Error("User not found")
     }
 
     const currentOrganization = user.members.find(
@@ -59,7 +61,7 @@ export async function getCurrentOrganization() {
     )?.organization
 
     if (!currentOrganization) {
-        throw new Error('Current organization not found')
+        throw new Error("Current organization not found")
     }
 
     const organizations = user.members.map((member) => member.organization)
@@ -93,7 +95,7 @@ export async function addOrganization(name: string) {
         data: {
             userId,
             organizationId: newOrganization.id,
-            role: 'ADMIN',
+            role: "ADMIN",
         },
     })
     return newOrganization
@@ -111,21 +113,21 @@ export async function switchOrganization(organizationId: string) {
     })
 
     if (!member) {
-        throw new Error('User is not a member of this organization')
+        throw new Error("User is not a member of this organization")
     }
 
     // Generate new JWT token with the new organizationId
-    const token = sign({ userId, organizationId }, process.env.JWT_SECRET || '', { expiresIn: '1d' })
+    const token = sign({ userId, organizationId }, process.env.JWT_SECRET || "", { expiresIn: "1d" })
 
     // Set new cookie
     let store = await cookies()
 
-    store.set('auth_token', token, {
+    store.set("auth_token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
         maxAge: 86400, // 1 day
-        path: '/',
+        path: "/",
     })
 }
 
@@ -140,7 +142,7 @@ export async function fetchSources() {
 export async function getUploadUrlForSource(filename: string) {
     const { organizationId } = await getAuthToken()
     if (!organizationId) {
-        throw new Error('User not authenticated')
+        throw new Error("User not authenticated")
     }
     const file = await getPresignedUrlForUpload(filename)
     return {
@@ -163,4 +165,70 @@ export async function deleteSource(sourceId: string) {
     await prisma.source.delete({
         where: { id: sourceId, organizationId },
     })
+}
+
+
+export async function sendMessageToSearch(history: Array<{ role: "user" | "assistant", content: any }>, message: string) {
+    const { organizationId } = await getAuthToken()
+
+    const indexId = await queryVectorDB(message, organizationId)
+
+    if(!indexId) {
+        return {
+            answer: "No documents found to answer this question",
+            sources: []
+        }
+    }
+
+    let sourceIndex = await prisma.indexedSource.findFirst({
+        where: {
+            organizationId,
+            indexId: indexId
+        }
+    })
+
+    if (!sourceIndex) {
+        return {
+            answer: "No documents found to answer this question",
+            sources: []
+        }
+    }
+
+    const query = `
+    Answer the question: ${message}
+    ${sourceIndex.referenceText && `Based on the following data: ${sourceIndex.referenceText}`}
+    `
+
+    if (sourceIndex.referenceImageFileName) {
+        const imageUrl = await getPresignedUrlForGet(sourceIndex.referenceImageFileName)
+        sourceIndex.referenceImageFileName = imageUrl.url
+    }
+
+    const answer = await generateAnswer(
+        query,
+        sourceIndex.referenceImageFileName ? [sourceIndex.referenceImageFileName] : [],
+        history
+    )
+
+    const source = await prisma.source.findFirstOrThrow({
+        where: {
+            id: sourceIndex.sourceId,
+            organizationId
+        }
+    })
+
+    const sourceFile = await getPresignedUrlForGet(source.fileName)
+
+    return {
+        answer: answer,
+        sources: [
+            {
+                title: source.nickName,
+                url: sourceFile.url,
+                referenceText: sourceIndex.referenceText || "",
+                referenceImage: sourceIndex.referenceImageFileName ? sourceIndex.referenceImageFileName : ""
+            }
+        ]
+    }
+
 }

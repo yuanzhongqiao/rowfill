@@ -20,7 +20,10 @@ cron.schedule("*/5 * * * *", async () => {
         const sources = await prisma.source.findMany({
             where: {
                 isIndexed: false,
-                isIndexing: false
+                isIndexing: false,
+                indexRunCount: {
+                    lte: 3 // Max Retries
+                }
             }
         })
 
@@ -46,7 +49,10 @@ cron.schedule("*/5 * * * *", async () => {
                     },
                     data: {
                         isIndexing: false,
-                        isIndexed: true
+                        isIndexed: true,
+                        indexRunCount: {
+                            increment: 1
+                        }
                     }
                 })
 
@@ -60,7 +66,10 @@ cron.schedule("*/5 * * * *", async () => {
                     },
                     data: {
                         isIndexing: false,
-                        isIndexed: false
+                        isIndexed: false,
+                        indexRunCount: {
+                            increment: 1
+                        }
                     }
                 })
 

@@ -38,7 +38,7 @@ export async function indexTextToVectorDB(text: string, organizationId: string, 
         properties: {
             source: sourceId
         },
-        vector: embedding.data[0].embedding
+        vectors: embedding.data[0].embedding,
     })
 
     return result
@@ -74,7 +74,7 @@ export async function queryVectorDB(text: string, organizationId: string, source
         } : undefined
     })
 
-    return result.objects[0].uuid
+    return result.objects.length > 0 ? result.objects[0].uuid : ""
 }
 
 
