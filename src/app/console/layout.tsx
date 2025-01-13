@@ -13,6 +13,7 @@ import SettingsPage from './settingsDialog'
 import SourcesDialog from './sourcesDialog'
 import { useSheetStore } from './shared'
 import SearchDialog from './searchDialog'
+import Image from 'next/image'
 
 export default function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false)
@@ -59,6 +60,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
       <div className="w-[250px] border-r-[1px] border-gray-200 p-4">
         <div className="flex flex-col gap-2 items-stretch justify-between h-full">
           <div className="flex flex-col gap-2">
+            <Image className="mb-2" src="/logo-full.svg" alt="Rowfill Logo" width={120} height={50} />
             <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full mb-1 flex items-center justify-start gap-2">
@@ -67,7 +69,6 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
               </DialogTrigger>
               <SearchDialog open={isSearchOpen} />
             </Dialog>
-
             <Button className="w-full mb-1 flex items-center justify-start gap-2" onClick={() => setIsAddProjectOpen(true)}>
               <PiPlusBold /> Add New Sheet
             </Button>

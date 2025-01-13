@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>Rowfill</h1>
+  <img src="public/logo-full.svg" alt="Paresta Logo" width="200">
   <p>Open-source document processing platform built for knowledge workers</p>
 </div>
 
