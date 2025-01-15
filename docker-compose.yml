@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  app:
+    image: ghcr.io/harishdeivanayagam/rowfill
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
+      - REDIS_URL=redis://redis:6379
+      - WEAVIATE_URL=http://weaviate:8080
+      - SMTP_HOST=smtpout.secureserver.net  # your smtp host
+      - SMTP_PORT=465  # your smtp port
+      - SMTP_SECURE=true
+      - SMTP_USER=user@example.com  # your smtp username
+      - SMTP_PASS=dummy_password  # your smtp password
+      - SMTP_FROM=noreply@example.com  # your from email
+      - JWT_SECRET=your_jwt_secret_here  # your jwt secret
+      - OPENAI_API_KEY=your_openai_key_here  # your openai api key
+      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
+      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
+      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
+      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
+    depends_on:
+      - postgres
+      - redis
+      - weaviate
+    command: >
+      sh -c "pnpx prisma migrate deploy &&
+             pnpm start:app"
+
+  cron:
+    image: ghcr.io/harishdeivanayagam/rowfill
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
+      - REDIS_URL=redis://redis:6379
+      - WEAVIATE_URL=http://weaviate:8080
+      - SMTP_HOST=smtpout.secureserver.net  # your smtp host
+      - SMTP_PORT=465  # your smtp port
+      - SMTP_SECURE=true
+      - SMTP_USER=user@example.com  # your smtp username
+      - SMTP_PASS=dummy_password  # your smtp password
+      - SMTP_FROM=noreply@example.com  # your from email
+      - JWT_SECRET=your_jwt_secret_here  # your jwt secret
+      - OPENAI_API_KEY=your_openai_key_here  # your openai api key
+      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
+      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
+      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
+      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
+    depends_on:
+      - postgres
+      - redis
+      - weaviate
+    command: pnpm start:cron
+
+  worker:
+    image: ghcr.io/harishdeivanayagam/rowfill
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
+      - REDIS_URL=redis://redis:6379
+      - WEAVIATE_URL=http://weaviate:8080
+      - SMTP_HOST=smtpout.secureserver.net  # your smtp host
+      - SMTP_PORT=465  # your smtp port
+      - SMTP_SECURE=true
+      - SMTP_USER=user@example.com  # your smtp username
+      - SMTP_PASS=dummy_password  # your smtp password
+      - SMTP_FROM=noreply@example.com  # your from email
+      - JWT_SECRET=your_jwt_secret_here  # your jwt secret
+      - OPENAI_API_KEY=your_openai_key_here  # your openai api key
+      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
+      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
+      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
+      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
+    depends_on:
+      - postgres
+      - redis
+      - weaviate
+    command: pnpm start:worker
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=rowfill
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  weaviate:
+    image: semitechnologies/weaviate:1.24.1
+    ports:
+      - "8080:8080"
+    environment:
+      - QUERY_DEFAULTS_LIMIT=25
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - PERSISTENCE_DATA_PATH=/var/lib/weaviate
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+
+volumes:
+  postgres_data:
+  redis_data:
+  weaviate_data:
