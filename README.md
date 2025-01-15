@@ -27,7 +27,7 @@ Rowfill helps extract, analyze, and process data from complex documents, images,
 
 ## 📚 Documentation
 
-Visit our [documentation](https://docs.rowfill.com) for:
+Visit our [documentation](https://rowfill.com/docs) for:
 - Detailed integration guides
 - API reference
 - Best practices
@@ -51,7 +51,7 @@ This project is licensed under the AGPLV3 License - see the [LICENSE](LICENSE) f
 ## 💬 Community & Support
 
 - [Discord Community](https://discord.gg/rowfill)
-- [GitHub Issues](https://github.com/RowfillHQ/rowfill/issues)
+- [GitHub Issues](https://github.com/harishdeivanayagam/rowfill/issues)
 - [Email Support](mailto:hello@rowfill.com)
 
 
