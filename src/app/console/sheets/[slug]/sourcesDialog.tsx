@@ -5,11 +5,10 @@ import { Source } from "@prisma/client"
 import { useEffect, useState } from "react"
 import { PiCheck, PiFile, PiFloppyDisk, PiX } from "react-icons/pi"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useToast } from "@/hooks/use-toast"
 import { fetchSources } from "../../actions"
 import { updateSourceToSheet, fetchSheetSources } from "./actions"
 
-export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onAdd: () => void }) {
+export default function SourcesDialog({ sheetId, singleSource, onAdd }: { sheetId: string, singleSource: boolean, onAdd: () => void }) {
     const [sources, setSources] = useState<Source[]>([])
     const [search, setSearch] = useState("")
     const [selectedSources, setSelectedSources] = useState<string[]>([])
@@ -63,8 +62,9 @@ export default function SourcesDialog({ sheetId, onAdd }: { sheetId: string, onA
                 </div>
                 {sources.length === 0 || filteredSources.length === 0 && <div className="flex items-center justify-center h-[350px] text-muted-foreground">No sources found</div>}
             </ScrollArea>
+            {singleSource && selectedSources.length > 1 && <div className="text-xs text-gray-500">Note: You can only select one source for table extraction</div>}
             <DialogFooter className="flex justify-end mt-5">
-                <Button disabled={selectedSources.length === 0} onClick={handleAdd}><PiFloppyDisk /> Save</Button>
+                <Button disabled={selectedSources.length === 0 || (singleSource && selectedSources.length > 1)} onClick={handleAdd}><PiFloppyDisk /> Save</Button>
             </DialogFooter>
         </div>
     )

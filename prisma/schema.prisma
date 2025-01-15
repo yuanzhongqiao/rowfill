@@ -43,18 +43,19 @@ model User {
 }
 
 model Organization {
-  id                String             @id @default(cuid())
-  name              String
-  apiKey            String             @unique @default(uuid())
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  members           Member[]
-  sheets            Sheet[]
-  sources           Source[]
-  sheetSources      SheetSource[]
-  sheetColumns      SheetColumn[]
-  sheetColumnValues SheetColumnValue[]
-  indexedSources    IndexedSource[]
+  id                 String              @id @default(cuid())
+  name               String
+  apiKey             String              @unique @default(uuid())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  members            Member[]
+  sheets             Sheet[]
+  sources            Source[]
+  sheetSources       SheetSource[]
+  sheetColumns       SheetColumn[]
+  sheetColumnValues  SheetColumnValue[]
+  indexedSources     IndexedSource[]
+  extractedSheetRows ExtractedSheetRow[]
 }
 
 model Member {
@@ -68,17 +69,19 @@ model Member {
 }
 
 model Sheet {
-  id                String             @id @default(uuid())
-  name              String
-  createdById       String
-  createdBy         User               @relation(fields: [createdById], references: [id])
-  organizationId    String
-  organization      Organization       @relation(fields: [organizationId], references: [id])
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  sheetSources      SheetSource[]
-  sheetColumns      SheetColumn[]
-  sheetColumnValues SheetColumnValue[]
+  id                 String              @id @default(uuid())
+  name               String
+  createdById        String
+  createdBy          User                @relation(fields: [createdById], references: [id])
+  organizationId     String
+  organization       Organization        @relation(fields: [organizationId], references: [id])
+  singleSource       Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  sheetSources       SheetSource[]
+  sheetColumns       SheetColumn[]
+  sheetColumnValues  SheetColumnValue[]
+  extractedSheetRows ExtractedSheetRow[]
 }
 
 model Source {
@@ -112,19 +115,20 @@ model SheetSource {
 }
 
 model SheetColumn {
-  id             String             @id @default(uuid())
-  sheetId        String
-  sheet          Sheet              @relation(fields: [sheetId], references: [id])
-  organizationId String
-  organization   Organization       @relation(fields: [organizationId], references: [id])
-  name           String
-  instruction    String
-  taskType       ColumnTaskType
-  dataType       ColumnDataType
-  defaultValue   String             @default("N/A")
-  columnValues   SheetColumnValue[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id                String              @id @default(uuid())
+  sheetId           String
+  sheet             Sheet               @relation(fields: [sheetId], references: [id])
+  organizationId    String
+  organization      Organization        @relation(fields: [organizationId], references: [id])
+  name              String
+  instruction       String
+  taskType          ColumnTaskType
+  dataType          ColumnDataType
+  defaultValue      String              @default("N/A")
+  columnValues      SheetColumnValue[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  extractedSheetRow ExtractedSheetRow[]
 }
 
 model SheetColumnValue {
@@ -145,16 +149,34 @@ model SheetColumnValue {
   @@id([sheetColumnId, sheetSourceId])
 }
 
+model ExtractedSheetRow {
+  rowNumber       Int
+  sheetId         String
+  sheet           Sheet          @relation(fields: [sheetId], references: [id])
+  value           String?
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  sheetColumnId   String
+  sheetColumn     SheetColumn    @relation(fields: [sheetColumnId], references: [id])
+  indexedSourceId String?
+  indexedSource   IndexedSource? @relation(fields: [indexedSourceId], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@id([rowNumber, sheetColumnId])
+}
+
 model IndexedSource {
-  id                     String             @id @default(uuid())
+  id                     String              @id @default(uuid())
   indexId                String
   referenceImageFileName String?
   referenceText          String?
   sourceId               String
-  source                 Source             @relation(fields: [sourceId], references: [id])
+  source                 Source              @relation(fields: [sourceId], references: [id])
   organizationId         String
-  organization           Organization       @relation(fields: [organizationId], references: [id])
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime           @updatedAt
+  organization           Organization        @relation(fields: [organizationId], references: [id])
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
   sheetColumnValues      SheetColumnValue[]
+  extractedSheetRows     ExtractedSheetRow[]
 }

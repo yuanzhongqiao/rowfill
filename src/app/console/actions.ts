@@ -18,13 +18,14 @@ export async function fetchSheets() {
     })
 }
 
-export async function addSheet({ name }: { name: string; }) {
+export async function addSheet({ name, singleSource }: { name: string; singleSource: boolean }) {
     const { organizationId, userId } = await getAuthToken()
     return await prisma.sheet.create({
         data: {
             name,
             organizationId,
-            createdById: userId
+            createdById: userId,
+            singleSource
         }
     })
 }

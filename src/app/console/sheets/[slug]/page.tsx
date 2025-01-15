@@ -1,9 +1,9 @@
 "use client"
 
-import { Sheet as SheetType, SheetColumn, SheetColumnValue, SheetSource, Source } from "@prisma/client"
+import { Sheet as SheetType, SheetColumn, SheetColumnValue, SheetSource, Source, ExtractedSheetRow } from "@prisma/client"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { deleteColumnFromSheet, deleteSheet, fetchSheet, runColumnSourceTask, updateSheetName } from "./actions"
+import { deleteColumnFromSheet, deleteSheet, extractDataFromSourceToSheet, fetchSheet, runColumnSourceTask, updateSheetName } from "./actions"
 import { PiArrowUpRight, PiDownload, PiList, PiListBold, PiPencil, PiPlay, PiPlayFill, PiPlus, PiSpinner, PiTrash, PiWarning } from "react-icons/pi"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,8 @@ export default function SheetPage() {
     const [sheetSources, setSheetSources] = useState<(SheetSource & { source: Source })[]>([])
     const [sheetColumns, setSheetColumns] = useState<SheetColumn[]>([])
     const [columnValues, setColumnValues] = useState<{ [key: string]: SheetColumnValue }>({})
+    const [extractedSheetRows, setExtractedSheetRows] = useState<{ [key: string]: ExtractedSheetRow }>({})
+    const [extractedMaximumRowNumber, setExtractedMaximumRowNumber] = useState(0)
     const [nameEdit, setNameEdit] = useState(false)
     const [sourcesDialogOpen, setSourcesDialogOpen] = useState(false)
     const [columnDialogOpen, setColumnDialogOpen] = useState(false)
@@ -46,7 +48,14 @@ export default function SheetPage() {
                 setSheet(data.sheet)
                 setSheetSources(data.sources as (SheetSource & { source: Source })[])
                 setSheetColumns(data.columns)
-                setColumnValues(data.columnValues)
+
+                if (!data.sheet.singleSource) {
+                    setColumnValues(data.columnValues)
+                } else {
+                    setExtractedSheetRows(data.extractedSheetRows)
+                    setExtractedMaximumRowNumber(data.extractedMaximumRowNumber)
+                }
+
             } catch (error) {
                 console.error("Error fetching sheet data:", error)
             }
@@ -113,6 +122,20 @@ export default function SheetPage() {
 
     const handleRunAll = async () => {
         try {
+
+            // TODO: Schedule for single source table extraction
+            if (sheet.singleSource) {
+
+                await extractDataFromSourceToSheet(sheet.id)
+
+                toast({
+                    title: "Started Extraction",
+                    description: "The extraction has been started. You'll be notified when it's done.",
+                })
+                return
+            }
+
+
             // TODO: Run all columns concurrently
             const promises = []
 
@@ -230,13 +253,15 @@ export default function SheetPage() {
             <Table className="table-fixed">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="border-r-[1px] bg-gray-100 border-gray-200">Source</TableHead>
+                        <TableHead className="border-r-[1px] bg-gray-100 border-gray-200">
+                            {sheet.singleSource ? "Rows" : "Sources"}
+                        </TableHead>
                         {sheetColumns.map((column) => (
                             <TableHead key={column.id} className="border-r-[1px] border-gray-200">
                                 <div className="flex items-center justify-between">
                                     {column.name}
                                     <div className="flex items-center gap-1">
-                                        <button onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>
+                                        {!sheet.singleSource && <button onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>}
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiListBold className="text-black" /></button>
@@ -262,13 +287,11 @@ export default function SheetPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {sheetSources.map((source) => (
+                    {!sheet.singleSource && sheetSources.map((source) => (
                         <TableRow key={source.id}>
                             <TableCell className="border-r-[1px] border-gray-200 bg-gray-50">{source.source.nickName}</TableCell>
                             {sheetColumns.map((column) => {
-
                                 const columnValue = columnValues[`${source.id}_${column.id}`]
-
                                 return (
                                     <TableCell className="border-r-[1px] border-gray-200" key={`${source.id}_${column.id}`}>
                                         <div className="flex items-center justify-between">
@@ -290,7 +313,7 @@ export default function SheetPage() {
                                                     <div className="mt-4 space-y-4">
                                                         <div className="p-4 rounded-lg border">
                                                             <h2 className="font-bold">Answer</h2>
-                                                            <p>{columnValues[`${source.id}_${column.id}`].value}</p>
+                                                            <p>{columnValue.value}</p>
                                                         </div>
                                                         <Separator />
                                                         {columnValue.indexedSourceId && <SourceIndexComponent sourceIndexId={columnValue.indexedSourceId} />}
@@ -309,17 +332,64 @@ export default function SheetPage() {
                             </TableCell>
                         </TableRow>
                     ))}
+                    {sheet.singleSource && Array.from({ length: extractedMaximumRowNumber }).map((_, key) => (
+                        <TableRow key={key}>
+                            {sheetColumns.map((column) => {
+                                const columnValue = extractedSheetRows[`${key}_${column.id}`]
+                                if (columnValue) {
+                                    return (
+                                        <TableCell className="border-r-[1px] border-gray-200" key={`${key}_${column.id}`}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    {columnValue.value || "No value"}
+                                                </div>
+                                                <Sheet>
+                                                    <SheetTrigger asChild>
+                                                        <button className="hover:bg-gray-200 bg-gray-100 rounded p-2">
+                                                            <PiArrowUpRight className="text-black" />
+                                                        </button>
+                                                    </SheetTrigger>
+                                                    <SheetContent className="h-screen overflow-y-auto">
+                                                        <SheetHeader>
+                                                            <SheetTitle>{column.name}</SheetTitle>
+                                                        </SheetHeader>
+                                                        <div className="mt-4 space-y-4">
+                                                            <div className="p-4 rounded-lg border">
+                                                                <h2 className="font-bold">Answer</h2>
+                                                                <p>{columnValue.value}</p>
+                                                            </div>
+                                                            <Separator />
+                                                            {columnValue.indexedSourceId && <SourceIndexComponent sourceIndexId={columnValue.indexedSourceId} />}
+                                                        </div>
+                                                    </SheetContent>
+                                                </Sheet>
+                                            </div>
+                                        </TableCell>
+                                    )
+                                } else {
+                                    return (
+                                        <TableCell className="border-r-[1px] border-gray-200" key={`${key}_${column.id}`}></TableCell>
+                                    )
+                                }
+                            })}
+                        </TableRow>
+                    ))}
                     <TableRow>
                         <TableCell className="bg-gray-100 border-r-[1px] border-gray-200">
                             <Dialog open={sourcesDialogOpen} onOpenChange={setSourcesDialogOpen}>
                                 <DialogTrigger asChild>
-                                    <button className="flex items-center gap-2 hover:underline">
-                                        <PiPlus />
-                                        Add Source
-                                    </button>
+                                    {!sheet.singleSource || (sheet.singleSource && sheetSources.length < 1) ?
+                                        <button className="flex items-center gap-2 hover:underline">
+                                            <PiPlus />
+                                            Add Source
+                                        </button>
+                                        : <button className="flex items-center gap-2 hover:underline">
+                                            <PiPencil />
+                                            Edit Source
+                                        </button>}
                                 </DialogTrigger>
                                 <DialogContent>
-                                    <SourcesDialog sheetId={sheet.id} onAdd={() => { fetchData(); setSourcesDialogOpen(false) }} />
+                                    <SourcesDialog singleSource={sheet.singleSource} sheetId={sheet.id} onAdd={() => { fetchData(); setSourcesDialogOpen(false) }} />
                                 </DialogContent>
                             </Dialog>
                         </TableCell>

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { getAuthToken } from "@/lib/auth"
-import { ColumnDataType, ColumnTaskType } from "@prisma/client"
+import { ColumnDataType, ColumnTaskType, ExtractedSheetRow, SheetColumnValue } from "@prisma/client"
 import { queryVectorDB } from "@/core/memory"
 import { generateAnswer } from "@/core/answer"
 import { getPresignedUrlForGet } from "@/lib/file"
@@ -39,24 +39,51 @@ export const fetchSheet = async (id: string) => {
         }
     })
 
-    const values = await prisma.sheetColumnValue.findMany({
-        where: {
-            sheetId: sheet.id,
-            organizationId
+
+    let columnValues: { [key: string]: SheetColumnValue } = {}
+    let extractedSheetRows: { [key: string]: ExtractedSheetRow } = {}
+    let extractedMaximumRowNumber = 0
+
+    if (!sheet.singleSource) {
+        const values = await prisma.sheetColumnValue.findMany({
+            where: {
+                sheetId: sheet.id,
+                organizationId
+            }
+        })
+
+
+        for (const value of values) {
+            columnValues[`${value.sheetSourceId}_${value.sheetColumnId}`] = value
         }
-    })
+    }
 
-    let columnValues: any = {}
 
-    for (const value of values) {
-        columnValues[`${value.sheetSourceId}_${value.sheetColumnId}`] = value
+    if (sheet.singleSource) {
+        let rowVals = await prisma.extractedSheetRow.findMany({
+            where: {
+                sheetId: sheet.id,
+                organizationId
+            }
+        })
+
+        extractedMaximumRowNumber = rowVals.reduce((max, row) => Math.max(max, row.rowNumber), 0)
+
+        for (let row of rowVals) {
+            extractedSheetRows[`${row.rowNumber}_${row.sheetColumnId}`] = row
+        }
+
+
+
     }
 
     return {
         sheet,
         sources,
         columns,
-        columnValues
+        columnValues,
+        extractedSheetRows,
+        extractedMaximumRowNumber
     }
 }
 
@@ -132,23 +159,25 @@ export const updateSourceToSheet = async (selectedSourceIds: string[], sheetId: 
                 }
             })
 
-            const sheetColumns = await tx.sheetColumn.findMany({
-                where: {
-                    sheetId: sheet.id,
-                    organizationId
-                }
-            })
-
-            for (const sheetColumn of sheetColumns) {
-                await tx.sheetColumnValue.create({
-                    data: {
-                        sheetSourceId: sheetSource.id,
-                        sheetColumnId: sheetColumn.id,
-                        value: "",
+            if (!sheet.singleSource) {
+                const sheetColumns = await tx.sheetColumn.findMany({
+                    where: {
                         sheetId: sheet.id,
                         organizationId
                     }
                 })
+
+                for (const sheetColumn of sheetColumns) {
+                    await tx.sheetColumnValue.create({
+                        data: {
+                            sheetSourceId: sheetSource.id,
+                            sheetColumnId: sheetColumn.id,
+                            value: "",
+                            sheetId: sheet.id,
+                            organizationId
+                        }
+                    })
+                }
             }
         })
     }
@@ -157,21 +186,23 @@ export const updateSourceToSheet = async (selectedSourceIds: string[], sheetId: 
 
         await prisma.$transaction(async (tx) => {
 
-            const sheetSource = await tx.sheetSource.findFirstOrThrow({
-                where: {
-                    sourceId: sourceId,
-                    sheetId: sheet.id,
-                    organizationId
-                }
-            })
+            if (!sheet.singleSource) {
+                const sheetSource = await tx.sheetSource.findFirstOrThrow({
+                    where: {
+                        sourceId: sourceId,
+                        sheetId: sheet.id,
+                        organizationId
+                    }
+                })
 
-            await tx.sheetColumnValue.deleteMany({
-                where: {
-                    sheetSourceId: sheetSource.id,
-                    sheetId: sheet.id,
-                    organizationId
-                }
-            })
+                await tx.sheetColumnValue.deleteMany({
+                    where: {
+                        sheetSourceId: sheetSource.id,
+                        sheetId: sheet.id,
+                        organizationId
+                    }
+                })
+            }
 
             await tx.sheetSource.deleteMany({
                 where: {
@@ -220,21 +251,23 @@ export async function addColumnToSheet(
             }
         })
 
-        const sheetSources = await tx.sheetSource.findMany({
-            where: {
-                sheetId: sheet.id
-            }
-        })
-
-        for (const sheetSource of sheetSources) {
-            await tx.sheetColumnValue.create({
-                data: {
-                    sheetSourceId: sheetSource.id,
-                    sheetColumnId: sheetColumn.id,
-                    sheetId: sheet.id,
-                    organizationId
+        if (!sheet.singleSource) {
+            const sheetSources = await tx.sheetSource.findMany({
+                where: {
+                    sheetId: sheet.id
                 }
             })
+
+            for (const sheetSource of sheetSources) {
+                await tx.sheetColumnValue.create({
+                    data: {
+                        sheetSourceId: sheetSource.id,
+                        sheetColumnId: sheetColumn.id,
+                        sheetId: sheet.id,
+                        organizationId
+                    }
+                })
+            }
         }
     })
 
@@ -300,6 +333,14 @@ export async function deleteColumnFromSheet(sheetId: string, sheetColumnId: stri
 
     await prisma.$transaction(async (tx) => {
 
+        await tx.extractedSheetRow.deleteMany({
+            where: {
+                sheetColumnId: sheetColumn.id,
+                sheetId: sheet.id,
+                organizationId
+            }
+        })
+
         await tx.sheetColumnValue.deleteMany({
             where: {
                 sheetColumnId: sheetColumn.id,
@@ -326,6 +367,14 @@ export async function deleteSheet(sheetId: string) {
     const { organizationId, userId } = await getAuthToken()
 
     await prisma.$transaction(async (tx) => {
+
+        await tx.extractedSheetRow.deleteMany({
+            where: {
+                sheetId: sheetId,
+                organizationId
+            }
+        })
+
         await tx.sheetColumnValue.deleteMany({
             where: {
                 sheetId: sheetId,
@@ -452,6 +501,13 @@ export async function runColumnSourceTask(sheetId: string, sheetColumnId: string
         indexedSourceId: indexedSourceId
     }
 
+}
+
+export async function extractDataFromSourceToSheet(sheetId: string) {
+    const { organizationId, userId } = await getAuthToken()
+
+    // TODO: Needs to be implemented
+    
 }
 
 
