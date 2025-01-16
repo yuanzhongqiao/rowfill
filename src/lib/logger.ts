@@ -1,12 +1,12 @@
-import winston from "winston";
-import { Logtail } from "@logtail/node";
-import { LogtailTransport } from "@logtail/winston";
+import winston from "winston"
+import { Logtail } from "@logtail/node"
+import { LogtailTransport } from "@logtail/winston"
 
 
 export class Logger {
-    private static _instance: Logger | null = null;
-    private _logtail: Logtail;
-    private _logger: winston.Logger;
+    private static _instance: Logger | null = null
+    private _logtail: Logtail
+    private _logger: winston.Logger
 
     constructor() {
         this._logtail = new Logtail(process.env.BETTER_STACK_TOKEN || "")
