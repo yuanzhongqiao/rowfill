@@ -9,7 +9,7 @@ export class Logger {
 
     constructor() {
 
-        const transports = process.env.LOGTAIL_TOKEN !== "" ?
+        const transports = process.env.LOGTAIL_TOKEN && process.env.LOGTAIL_TOKEN !== "" ?
             new LogtailTransport(new Logtail(process.env.LOGTAIL_TOKEN || "")) :
             new winston.transports.Console({
                 format: winston.format.combine(
