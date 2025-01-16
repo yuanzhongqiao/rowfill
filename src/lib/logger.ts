@@ -5,20 +5,20 @@ import { LogtailTransport } from "@logtail/winston"
 
 export class Logger {
     private static _instance: Logger | null = null
-    private _logtail: Logtail
     private _logger: winston.Logger
 
     constructor() {
-        this._logtail = new Logtail(process.env.BETTER_STACK_TOKEN || "")
 
-        const transports = process.env.LOGTAIL !== "" ? new LogtailTransport(this._logtail) : new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.simple()
-            ),
-        })
+        const transports = process.env.LOGTAIL_TOKEN !== "" ?
+            new LogtailTransport(new Logtail(process.env.LOGTAIL_TOKEN || "")) :
+            new winston.transports.Console({
+                format: winston.format.combine(
+                    winston.format.colorize(),
+                    winston.format.simple()
+                ),
+            })
 
-        // process .env is PROD then logtail else commandline
+        // process .env is LOGTAIL_TOKEN then logtail else commandline
         this._logger = winston.createLogger({
             transports: [transports],
         })
