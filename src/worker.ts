@@ -1,10 +1,11 @@
 import { Worker } from "bullmq";
+import { logger } from "./lib/logger";
 
 // Define the worker process
 new Worker(
     "queue",
     async (job) => {
-        console.log("Worker running")
+        logger.info("Worker running")
     },
     {
         connection: {

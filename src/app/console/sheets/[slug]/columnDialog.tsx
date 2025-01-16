@@ -61,7 +61,6 @@ export default function ColumnDialog({ open, defaultData, sheetId, onSubmit }: {
                 description: "The column has been saved to the sheet",
             })
         } catch (error) {
-            console.error(error)
             toast({
                 title: "Error",
                 description: "An error occurred while saving the column",

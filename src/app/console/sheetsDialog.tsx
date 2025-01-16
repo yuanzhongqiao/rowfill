@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { PiSpinner } from "react-icons/pi"
 import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
 
 interface AddSheetDialogProps {
     isOpen: boolean;
@@ -29,14 +30,15 @@ const sheetSchema = z.object({
 type SheetFormValues = z.infer<typeof sheetSchema>
 
 export function AddSheetDialog({ isOpen, onClose }: AddSheetDialogProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const form = useForm<SheetFormValues>({
         defaultValues: {
             name: '',
             singleSource: false
         },
         resolver: zodResolver(sheetSchema)
-    });
+    })
+    const { toast } = useToast()
 
     const onSubmit = async (data: SheetFormValues) => {
         setIsSubmitting(true);
@@ -45,12 +47,15 @@ export function AddSheetDialog({ isOpen, onClose }: AddSheetDialogProps) {
             onClose();
             form.reset();
         } catch (error) {
-            console.error('Error adding sheet:', error);
-            // Handle error (e.g., show error message)
+            toast({
+                title: "Error adding sheet",
+                description: "An error occurred while adding the sheet",
+                variant: "destructive"
+            })
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

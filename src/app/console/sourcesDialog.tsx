@@ -56,7 +56,6 @@ export default function SourcesDialog() {
                 await fetchData()
                 setUploadError('')
             } catch (error) {
-                console.error('Error uploading file:', error)
                 setUploadError('Error uploading file(s)')
             } finally {
                 setUploading(false);
@@ -74,7 +73,6 @@ export default function SourcesDialog() {
                 variant: 'destructive',
             })
         } catch (error) {
-            console.error('Error deleting source:', error)
             toast({
                 title: 'Error deleting source',
                 description: 'An error occurred while deleting the source',

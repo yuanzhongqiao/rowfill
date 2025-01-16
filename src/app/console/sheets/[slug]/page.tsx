@@ -90,7 +90,6 @@ export default function SheetPage() {
                 description: "The column has been deleted from the sheet",
             })
         } catch (error) {
-            console.error(error)
             toast({
                 title: "Error",
                 description: "An error occurred while deleting the column",

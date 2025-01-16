@@ -1,5 +1,6 @@
 'use server'
 
+import { logger } from '@/lib/logger'
 import { prisma } from '@/lib/prisma'
 
 export async function signupUser(data: { name: string, email: string, organizationName: string }) {
@@ -28,7 +29,7 @@ export async function signupUser(data: { name: string, email: string, organizati
         })
         return { success: true }
     } catch (error) {
-        console.error('Signup error:', error)
+        logger.error('Signup error:', error)
         return { success: false }
     }
 }

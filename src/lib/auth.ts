@@ -1,6 +1,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import jwt from "jsonwebtoken"
+import { logger } from "./logger"
 
 interface DecodedToken {
     userId: string
@@ -19,7 +20,7 @@ export async function getAuthToken(): Promise<DecodedToken> {
         const decoded = jwt.verify(token.value, process.env.JWT_SECRET as string) as DecodedToken
         return decoded
     } catch (error) {
-        console.error("Invalid token:", error)
+        logger.error("Invalid token:", error)
         redirect("/auth/login")
     }
 }

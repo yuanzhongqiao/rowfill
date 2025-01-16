@@ -2,12 +2,13 @@ import cron from "node-cron"
 import { indexSource } from "@/core/indexer"
 import { prisma } from "@/lib/prisma"
 import { redis } from "@/lib/redis"
+import { logger } from "./lib/logger"
 
 cron.schedule("*/5 * * * *", async () => {
     try {
         const lock = await redis.get("cron-lock")
 
-        console.log("CRON Lock Status", lock)
+        logger.info("CRON Lock Status", lock)
 
         if (lock) {
             return
@@ -15,7 +16,7 @@ cron.schedule("*/5 * * * *", async () => {
 
         await redis.set("cron-lock", "true")
 
-        console.log("Starting CRON")
+        logger.info("Starting CRON")
 
         const sources = await prisma.source.findMany({
             where: {
@@ -29,7 +30,7 @@ cron.schedule("*/5 * * * *", async () => {
 
         for (const source of sources) {
 
-            console.log(`Indexing source of ${source.id}`)
+            logger.info(`Indexing source of ${source.id}`)
 
             try {
                 await prisma.source.update({
@@ -56,7 +57,7 @@ cron.schedule("*/5 * * * *", async () => {
                     }
                 })
 
-                console.log(`Indexed source of ${source.id}`)
+                logger.info(`Indexed source of ${source.id}`)
 
 
             } catch (err) {
@@ -73,15 +74,15 @@ cron.schedule("*/5 * * * *", async () => {
                     }
                 })
 
-                console.log(err)
-                console.log(`Failed to index source of ${source.id}`)
+                logger.info(err)
+                logger.info(`Failed to index source of ${source.id}`)
             }
         }
 
         await redis.del("cron-lock")
 
     } catch (err) {
-        console.error(err)
+        logger.error(err)
         await redis.del("cron-lock")
     }
 })

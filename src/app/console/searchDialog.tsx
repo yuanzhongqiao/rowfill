@@ -40,7 +40,6 @@ export default function SearchDialog({ open }: { open: boolean }) {
                 })
             }))
         } catch (err) {
-            console.log(err)
             setMessages(produce((draft) => {
                 draft.push({
                     role: "assistant",

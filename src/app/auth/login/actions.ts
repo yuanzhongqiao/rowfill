@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { cookies } from 'next/headers'
 import { sign } from 'jsonwebtoken'
+import { logger } from '@/lib/logger'
 
 export async function loginUser(email: string) {
 
@@ -24,7 +25,7 @@ export async function loginUser(email: string) {
     )
 
     if (!emailResult.success) {
-        console.error('Failed to send email:', emailResult.error)
+        logger.error('Failed to send email:', emailResult.error)
         return { success: false, error: 'Failed to send OTP email' }
     }
 
