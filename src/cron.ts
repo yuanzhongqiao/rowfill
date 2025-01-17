@@ -18,6 +18,29 @@ cron.schedule("*/5 * * * *", async () => {
 
         logger.info("Starting CRON")
 
+        if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+            await prisma.billing.updateMany({
+                where: {
+                    AND: [
+                        {
+                            expiresAt: {
+                                not: null
+                            }
+                        },
+                        {
+                            expiresAt: {
+                                lte: new Date()
+                            }
+                        }
+                    ]
+                },
+                data: {
+                    plan: "FREE",
+                    expiresAt: null
+                }
+            })
+        }
+
         const sources = await prisma.source.findMany({
             where: {
                 isIndexed: false,
@@ -37,7 +60,7 @@ cron.schedule("*/5 * * * *", async () => {
                     isIndexing: true
                 }
             })
-            
+
             await queue.add("indexSource", { sourceId: source.id })
         }
 

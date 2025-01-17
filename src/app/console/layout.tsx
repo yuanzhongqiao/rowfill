@@ -14,6 +14,7 @@ import SourcesDialog from './sourcesDialog'
 import { useSheetStore } from './shared'
 import SearchDialog from './searchDialog'
 import Image from 'next/image'
+import { getBillingAndCreateIfNotExists } from './ee/actions'
 
 export default function ConsoleLayoutContent({ children }: { children: React.ReactNode }) {
   const [isAddProjectOpen, setIsAddProjectOpen] = useState(false)
@@ -26,6 +27,8 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
   useEffect(() => {
     init()
   }, [])
+
+
 
   useEffect(() => {
     // Check if /sheets/slug pattern is in the pathname
@@ -46,6 +49,9 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
     const auth = await checkAuth()
     if (!auth) {
       redirect('/auth/login')
+    }
+    if (process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true") {
+      await getBillingAndCreateIfNotExists()
     }
     await handleFetchSheets()
   }
