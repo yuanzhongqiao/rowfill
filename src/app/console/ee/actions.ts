@@ -44,5 +44,49 @@ export async function getPlans() {
     }
 
     // TODO: Implement plans
-    return []
+    return [
+        {
+            name: "FREE",
+            price: "0",
+            credits: "1000",
+            for: "lifetime",
+            purchaseUrl: "",
+        },
+        {
+            name: "PRO_MONTHLY",
+            price: "35",
+            credits: "15000",
+            for: "monthly",
+            purchaseUrl: "", // TODO: Stripe Link
+        },
+        {
+            name: "PRO_YEARLY",
+            price: "350",
+            credits: "15000",
+            for: "yearly",
+            purchaseUrl: "", // TODO: Stripe Link
+        },
+        {
+            name: "ENTERPRISE",
+            price: "Custom",
+            credits: "100000+",
+            for: "Contract",
+            purchaseUrl: "", // TODO: Calendar Link
+        }
+    ]
+}
+
+export async function handleDowngradeToFree() {
+    const { organizationId } = await getAuthToken()
+
+    await prisma.billing.update({
+        where: {
+            organizationId: organizationId
+        },
+        data: {
+            plan: "FREE"
+        }
+    })
+
+    return true
 }
