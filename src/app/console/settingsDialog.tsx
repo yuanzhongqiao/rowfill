@@ -9,6 +9,8 @@ import { updateUserName, updateOrganizationName, addOrganization, switchOrganiza
 import { useToast } from '@/hooks/use-toast'
 import { Label } from '@/components/ui/label'
 import { DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import BillingComponent from './ee/billing'
 
 type Organization = {
     id: string
@@ -73,71 +75,84 @@ export default function SettingsPage() {
             <DialogTitle>
                 Settings
             </DialogTitle>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg font-semibold">User Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleUpdateUserName} className='flex flex-col gap-2'>
-                        <Label>User Name</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                className="w-2/3"
-                                value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                placeholder="User Name"
-                            />
-                            <Button className="w-1/3" type="submit">Update Name</Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg font-semibold">Organization Settings</CardTitle>
-                </CardHeader>
-                <CardContent className='flex flex-col gap-5'>
-                    <form onSubmit={handleUpdateOrganizationName} className="flex flex-col gap-2">
-                        <Label>Organization Name</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                className="w-2/3"
-                                value={organizationName}
-                                onChange={(e) => setOrganizationName(e.target.value)}
-                                placeholder="Organization Name"
-                            />
-                            <Button className='w-1/3' type="submit">Update Name</Button>
-                        </div>
-                    </form>
-                    <form onSubmit={handleAddOrganization} className="flex flex-col gap-2">
-                        <Label>New Organization Name</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                className="w-2/3"
-                                value={newOrganizationName}
-                                onChange={(e) => setNewOrganizationName(e.target.value)}
-                                placeholder="New Organization Name"
-                            />
-                            <Button className="w-1/3" type="submit" disabled={!newOrganizationName}>Add Organization</Button>
-                        </div>
-                    </form>
-                    <div className='flex flex-col gap-2'>
-                        <Label>Switch Organization</Label>
-                        <Select onValueChange={handleSwitchOrganization} value={currentOrganizationId}>
-                            <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Switch Organization" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {organizations.map((org) => (
-                                    <SelectItem key={org.id} value={org.id}>
-                                        {org.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+            <Tabs defaultValue="settings" className="w-full">
+                <TabsList className="w-full">
+                    <TabsTrigger className="w-full" value="settings">General Settings</TabsTrigger>
+                    {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" && <TabsTrigger className="w-full" value="billing">Billing</TabsTrigger>}
+                </TabsList>
+                <TabsContent value="settings">
+                    <div className="space-y-5">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">User Settings</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleUpdateUserName} className='flex flex-col gap-2'>
+                                    <Label>User Name</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            className="w-2/3"
+                                            value={userName}
+                                            onChange={(e) => setUserName(e.target.value)}
+                                            placeholder="User Name"
+                                        />
+                                        <Button className="w-1/3" type="submit">Update Name</Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Organization Settings</CardTitle>
+                            </CardHeader>
+                            <CardContent className='flex flex-col gap-5'>
+                                <form onSubmit={handleUpdateOrganizationName} className="flex flex-col gap-2">
+                                    <Label>Organization Name</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            className="w-2/3"
+                                            value={organizationName}
+                                            onChange={(e) => setOrganizationName(e.target.value)}
+                                            placeholder="Organization Name"
+                                        />
+                                        <Button className='w-1/3' type="submit">Update Name</Button>
+                                    </div>
+                                </form>
+                                <form onSubmit={handleAddOrganization} className="flex flex-col gap-2">
+                                    <Label>New Organization Name</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            className="w-2/3"
+                                            value={newOrganizationName}
+                                            onChange={(e) => setNewOrganizationName(e.target.value)}
+                                            placeholder="New Organization Name"
+                                        />
+                                        <Button className="w-1/3" type="submit" disabled={!newOrganizationName}>Add Organization</Button>
+                                    </div>
+                                </form>
+                                <div className='flex flex-col gap-2'>
+                                    <Label>Switch Organization</Label>
+                                    <Select onValueChange={handleSwitchOrganization} value={currentOrganizationId}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Switch Organization" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {organizations.map((org) => (
+                                                <SelectItem key={org.id} value={org.id}>
+                                                    {org.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
-                </CardContent>
-            </Card>
+                </TabsContent>
+                {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" && <TabsContent value="billing">
+                    <BillingComponent />
+                </TabsContent>}
+            </Tabs>
         </div>
     )
 }

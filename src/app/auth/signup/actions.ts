@@ -27,6 +27,8 @@ export async function signupUser(data: { name: string, email: string, organizati
                 },
             })
         })
+
+
         return { success: true }
     } catch (error) {
         logger.error('Signup error:', error)
