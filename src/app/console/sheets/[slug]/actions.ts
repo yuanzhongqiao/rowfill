@@ -6,6 +6,7 @@ import { ColumnDataType, ColumnTaskType, ExtractedSheetRow, SheetColumnValue } f
 import { queryVectorDB } from "@/core/memory"
 import { generateAnswer } from "@/core/answer"
 import { getPresignedUrlForGet } from "@/lib/file"
+import { queue } from "@/lib/queue"
 
 export const fetchSheet = async (id: string) => {
     const { organizationId, userId } = await getAuthToken()
@@ -507,7 +508,20 @@ export async function extractDataFromSourceToSheet(sheetId: string) {
     const { organizationId, userId } = await getAuthToken()
 
     // TODO: Needs to be implemented
-    
+    await prisma.sheet.update({
+        where: {
+            id: sheetId,
+            organizationId,
+            createdById: userId
+        },
+        data: {
+            extractInProgress: true
+        }
+    })
+
+    await queue.add("extractTableToSheet", { sheetId })
+
+    return
 }
 
 

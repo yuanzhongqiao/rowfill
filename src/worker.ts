@@ -1,11 +1,28 @@
-import { Worker } from "bullmq";
-import { logger } from "./lib/logger";
+import { Worker } from "bullmq"
+import { extractTableToSheet } from "./core/extractTable"
+import { logger } from "@/lib/logger"
+import { indexSource } from "@/core/indexer"
+import { prisma } from "@/lib/prisma"
 
 // Define the worker process
 new Worker(
     "queue",
     async (job) => {
-        logger.info("Worker running")
+        if (job.name === "extractTableToSheet") {
+            try {
+                await extractTableToSheet(job.data.sheetId)
+            } catch (err) {
+                logger.error(err)
+            }
+        }
+
+        if (job.name === "indexSource") {
+            try {
+                await indexSource(job.data.sourceId)
+            } catch (err) {
+                logger.error(err)
+            }
+        }
     },
     {
         connection: {
