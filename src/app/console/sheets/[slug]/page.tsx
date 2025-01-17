@@ -227,11 +227,11 @@ export default function SheetPage() {
                     )}
                 </div>
                 <div className="flex gap-2">
-                    <Button onClick={handleRunAll}>
+                    <Button disabled={sheet.extractInProgress || runAlert.open} onClick={handleRunAll}>
                         <PiPlay />
                         Run All
                     </Button>
-                    <Button>
+                    <Button disabled={sheet.extractInProgress || runAlert.open}>
                         <PiDownload />
                         Export as CSV
                     </Button>
@@ -242,7 +242,7 @@ export default function SheetPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleDeleteSheet}>
+                            <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={handleDeleteSheet}>
                                 <PiTrash /> Delete Sheet
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -260,16 +260,16 @@ export default function SheetPage() {
                                 <div className="flex items-center justify-between">
                                     {column.name}
                                     <div className="flex items-center gap-1">
-                                        {!sheet.singleSource && <button onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>}
+                                        {!sheet.singleSource && <button disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>}
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiListBold className="text-black" /></button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={() => { setColumnDialogData(column); setColumnDialogOpen(true) }}>
+                                                <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => { setColumnDialogData(column); setColumnDialogOpen(true) }}>
                                                     <PiPencil /> Edit Column
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleDeleteColumn(column.id)}>
+                                                <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleDeleteColumn(column.id)}>
                                                     <PiTrash className="text-red-500" /> Delete Column
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
