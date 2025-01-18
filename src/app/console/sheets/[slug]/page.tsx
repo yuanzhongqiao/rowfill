@@ -126,11 +126,13 @@ export default function SheetPage() {
             if (sheet.singleSource) {
 
                 await extractDataFromSourceToSheet(sheet.id)
+                await fetchData()
 
                 toast({
                     title: "Started Extraction",
                     description: "The extraction has been started. You'll be notified when it's done.",
                 })
+
                 return
             }
 
@@ -406,6 +408,15 @@ export default function SheetPage() {
                         <h2 className="font-bold">Running Rows {runAlert.done} of {runAlert.count}</h2>
                     </div>
                     <p>Please wait while we process the rows. Don't close this window.</p>
+                </Alert>
+            </div>}
+            {sheet.extractInProgress && <div className="fixed bottom-5 right-5">
+                <Alert className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                        <PiSpinner className="animate-spin text-lg" />
+                        <h2 className="font-bold">Extraction in Progress</h2>
+                    </div>
+                    <p>You will be notified when the extraction is complete via email</p>
                 </Alert>
             </div>}
         </div>
