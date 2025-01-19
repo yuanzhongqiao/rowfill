@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { OpenAI } from "openai"
 import { zodResponseFormat } from "openai/helpers/zod"
 import { z } from "zod"
+import { checkCredits, consumeCredits } from "./ee/billing"
 
 export async function extractTableToSheet(sheetId: string) {
     const sheet = await prisma.sheet.findFirstOrThrow({
@@ -52,6 +53,8 @@ export async function extractTableToSheet(sheetId: string) {
             }
         })
 
+
+
         const rowSchema = z.object(
             Object.fromEntries(
                 columns.map((column) => [
@@ -60,6 +63,14 @@ export async function extractTableToSheet(sheetId: string) {
                 ])
             )
         )
+
+
+        if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+            const creditsAvailable = await checkCredits(sheet.organizationId, indexedSources.length)
+            if (!creditsAvailable) {
+                throw new Error("No credits available")
+            }
+        }
 
         for (let indexedSource of indexedSources) {
             const response = await openai.beta.chat.completions.parse({
@@ -89,7 +100,6 @@ export async function extractTableToSheet(sheetId: string) {
                 for (let row of output.rows) {
 
                     for (let columnName in row) {
-
                         const foundColumn = columns.find((column) => column.name === columnName)
 
                         if (foundColumn) {
@@ -104,12 +114,15 @@ export async function extractTableToSheet(sheetId: string) {
                                     indexedSourceId: indexedSource.id
                                 }
                             })
-
                             rowCount += 1
                         }
                     }
                 }
             }
+        }
+
+        if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+            await consumeCredits(sheet.organizationId, indexedSources.length)
         }
 
         await prisma.sheet.update({

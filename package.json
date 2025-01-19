@@ -1,6 +1,6 @@
 {
   "name": "rowfill",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "scripts": {
     "dev:app": "next dev",
     "dev:cron": "nodemon --exec ts-node --project tsconfig.server.json src/cron.ts",

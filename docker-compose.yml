@@ -7,7 +7,10 @@ services:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
-      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
       - WEAVIATE_URL=http://weaviate:8080
       - SMTP_HOST=smtpout.secureserver.net  # your smtp host
       - SMTP_PORT=465  # your smtp port
@@ -17,24 +20,30 @@ services:
       - SMTP_FROM=noreply@example.com  # your from email
       - JWT_SECRET=your_jwt_secret_here  # your jwt secret
       - OPENAI_API_KEY=your_openai_key_here  # your openai api key
-      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
-      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
-      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
-      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - AWS_STORAGE_BUCKET_NAME=rowfill  # bucket will be created automatically
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_S3_ACCESS_KEY_ID=minioadmin
+      - AWS_S3_SECRET_ACCESS_KEY=minioadmin
       - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
     depends_on:
       - postgres
       - redis
       - weaviate
+      - minio
     command: >
       sh -c "pnpx prisma migrate deploy &&
              pnpm start:app"
+    networks:
+      - app-network
 
   cron:
     image: ghcr.io/harishdeivanayagam/rowfill
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
-      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
       - WEAVIATE_URL=http://weaviate:8080
       - SMTP_HOST=smtpout.secureserver.net  # your smtp host
       - SMTP_PORT=465  # your smtp port
@@ -44,22 +53,28 @@ services:
       - SMTP_FROM=noreply@example.com  # your from email
       - JWT_SECRET=your_jwt_secret_here  # your jwt secret
       - OPENAI_API_KEY=your_openai_key_here  # your openai api key
-      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
-      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
-      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
-      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - AWS_STORAGE_BUCKET_NAME=rowfill  # bucket will be created automatically
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_S3_ACCESS_KEY_ID=minioadmin
+      - AWS_S3_SECRET_ACCESS_KEY=minioadmin
       - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
     depends_on:
       - postgres
       - redis
       - weaviate
+      - minio
     command: pnpm start:cron
+    networks:
+      - app-network
 
   worker:
     image: ghcr.io/harishdeivanayagam/rowfill
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/rowfill
-      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
       - WEAVIATE_URL=http://weaviate:8080
       - SMTP_HOST=smtpout.secureserver.net  # your smtp host
       - SMTP_PORT=465  # your smtp port
@@ -69,16 +84,19 @@ services:
       - SMTP_FROM=noreply@example.com  # your from email
       - JWT_SECRET=your_jwt_secret_here  # your jwt secret
       - OPENAI_API_KEY=your_openai_key_here  # your openai api key
-      - AWS_STORAGE_BUCKET_NAME=your_bucket_name  # your s3 bucket name
-      - AWS_S3_ENDPOINT_URL=your_s3_endpoint  # your s3 endpoint
-      - AWS_S3_ACCESS_KEY_ID=your_access_key  # your s3 access key
-      - AWS_S3_SECRET_ACCESS_KEY=your_secret_key  # your s3 secret key
+      - AWS_STORAGE_BUCKET_NAME=rowfill  # bucket will be created automatically
+      - AWS_S3_ENDPOINT_URL=http://minio:9000
+      - AWS_S3_ACCESS_KEY_ID=minioadmin
+      - AWS_S3_SECRET_ACCESS_KEY=minioadmin
       - WEAVIATE_API_KEY=your_weaviate_key  # your weaviate api key
     depends_on:
       - postgres
       - redis
       - weaviate
+      - minio
     command: pnpm start:worker
+    networks:
+      - app-network
 
   postgres:
     image: postgres:16
@@ -90,6 +108,9 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - app-network
+
 
   redis:
     image: redis:7
@@ -97,19 +118,45 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - app-network
+
 
   weaviate:
-    image: semitechnologies/weaviate:1.24.1
+    image: semitechnologies/weaviate:1.28.3
     ports:
       - "8080:8080"
     environment:
       - QUERY_DEFAULTS_LIMIT=25
-      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+      - AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=false
+      - AUTHENTICATION_APIKEY_ENABLED=true
+      - AUTHENTICATION_APIKEY_ALLOWED_KEYS=your_weaviate_key
       - PERSISTENCE_DATA_PATH=/var/lib/weaviate
     volumes:
       - weaviate_data:/var/lib/weaviate
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - minio_data:/data
+    command: server --console-address ":9001" /data
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
   redis_data:
   weaviate_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
