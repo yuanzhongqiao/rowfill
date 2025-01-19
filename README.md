@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo-full.svg" alt="Paresta Logo" width="200">
+  <img src="public/logo-full.svg" alt="Rowfill Logo" width="200">
   <p>Open-source document processing platform built for knowledge workers</p>
 </div>
 
@@ -17,7 +17,7 @@ Rowfill helps extract, analyze, and process data from complex documents, images,
 ### 🔒 Privacy & Security
 - **Local LLM Support**: Supports Local LLMs like Llama, Mistral also supports OpenAI vision models
 - **Sync with your company data**: Clone sensitive data while maintaining privacy
-- **Open Source**: Paresta is a AGPLv3 licensed open source project
+- **Open Source**: Rowfill is a AGPLv3 licensed open source project
 
 ## 🚀 Getting Started
 
