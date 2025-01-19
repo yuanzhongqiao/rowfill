@@ -10,8 +10,7 @@ export async function getPresignedUrlForUpload(filename: string) {
         },
         region: "us-east-1",
         endpoint: process.env.AWS_S3_ENDPOINT_URL,
-        apiVersion: "v4",
-        forcePathStyle: true
+        apiVersion: "v4"
     })
 
     filename = getUniqueFileName(filename)
@@ -36,8 +35,7 @@ export async function getPresignedUrlForGet(filename: string) {
         },
         region: "us-east-1",
         endpoint: process.env.AWS_S3_ENDPOINT_URL,
-        apiVersion: "v4",
-        forcePathStyle: true
+        apiVersion: "v4"
     });
 
     const command = new GetObjectCommand({
