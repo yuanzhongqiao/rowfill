@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const handleCheckAuth = async () => {
     const auth = await checkAuth()
     if (auth) {
-      redirect('/console/dashboard')
+      redirect('/console')
     }
   }
 
