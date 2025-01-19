@@ -143,6 +143,8 @@ services:
     environment:
       - MINIO_ROOT_USER=minioadmin
       - MINIO_ROOT_PASSWORD=minioadmin
+      - MINIO_SERVER_URL=https://bucket.server.com # Your server URL
+      - MINIO_DOMAIN=bucket.server.com # For Virtual Host Style S3
     volumes:
       - minio_data:/data
     command: server --console-address ":9001" /data
