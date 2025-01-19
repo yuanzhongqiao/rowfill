@@ -7,6 +7,7 @@ import { queryVectorDB } from "@/core/memory"
 import { generateAnswer } from "@/core/answer"
 import { getPresignedUrlForGet } from "@/lib/file"
 import { queue } from "@/lib/queue"
+import { checkCredits, consumeCredits } from "@/core/ee/billing"
 
 export const fetchSheet = async (id: string) => {
     const { organizationId, userId } = await getAuthToken()
@@ -414,6 +415,13 @@ export async function deleteSheet(sheetId: string) {
 export async function runColumnSourceTask(sheetId: string, sheetColumnId: string, sheetSourceId: string) {
     const { organizationId, userId } = await getAuthToken()
 
+    if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+        const creditsAvailable = await checkCredits(organizationId, 1)
+        if (!creditsAvailable) {
+            throw new Error("No credits available")
+        }
+    }
+
     const sheet = await prisma.sheet.findFirstOrThrow({
         where: {
             id: sheetId,
@@ -496,6 +504,10 @@ export async function runColumnSourceTask(sheetId: string, sheetColumnId: string
             indexedSourceId: indexedSourceId
         }
     })
+
+    if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+        await consumeCredits(organizationId, 1)
+    }
 
     return {
         answer,
