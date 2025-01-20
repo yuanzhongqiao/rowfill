@@ -14,3 +14,5 @@ OPENAI_API_KEY=[add your openai api key]
 LOGTAIL_TOKEN=[add your logtail token / or it defaults to console logging]
 LOGTAIL_SOURCE_TOKEN=your_logtail_token_here
 NODE_ENV=production
+WEAVIATE_URL=[add your weaviate url] // SKIP if running locally
+WEAVIATE_API_KEY=[add your weaviate api key] // SKIP if running locally
