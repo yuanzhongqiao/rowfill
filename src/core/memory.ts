@@ -2,7 +2,27 @@ import { OpenAI } from "openai"
 import weaviate, { WeaviateClient } from "weaviate-client"
 
 
-async function createTenantIfNotExists(client: WeaviateClient, collectionName: string, organizationId: string) {
+async function createTenantOrCollectionIfNotExists(client: WeaviateClient, collectionName: string, organizationId: string) {
+
+    const collectionExists = await client.collections.exists(collectionName)
+
+    if (!collectionExists) {
+        await client.collections.create({
+            name: collectionName,
+            multiTenancy: {
+                enabled: true
+            },
+            properties: [
+                {
+                    name: "source",
+                    dataType: "text",
+                    indexFilterable: true,
+                    indexSearchable: true,
+                    tokenization: "word"
+                }
+            ]
+        })
+    }
 
     const tenant = await client.collections.get(collectionName).tenants.getByName(organizationId)
 
@@ -21,7 +41,7 @@ export async function indexTextToVectorDB(text: string, organizationId: string, 
         authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
     })
 
-    await createTenantIfNotExists(client, "Documents", organizationId)
+    await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
     const collection = client.collections.get("Documents").withTenant(organizationId)
 
@@ -50,7 +70,7 @@ export async function queryVectorDB(text: string, organizationId: string, source
         authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
     })
 
-    await createTenantIfNotExists(client, "Documents", organizationId)
+    await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
     const collection = client.collections.get("Documents").withTenant(organizationId)
 
@@ -82,6 +102,8 @@ export async function deleteVectorIndex(indexId: string, organizationId: string)
     const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
         authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
     })
+
+    await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
     const collection = client.collections.get("Documents").withTenant(organizationId)
 
