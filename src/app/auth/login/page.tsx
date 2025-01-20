@@ -48,7 +48,15 @@ export default function LoginPage() {
           description: "Please check your email for the OTP.",
         })
       } else {
-        await verifyOTP(data.email, data.otp!)
+        if (!data.otp) {
+          toast({
+            title: "Error",
+            description: "OTP is required.",
+            variant: "destructive",
+          })
+          return
+        }
+        await verifyOTP(data.email, data.otp)
         toast({
           title: "Success",
           description: "You have successfully logged in.",
