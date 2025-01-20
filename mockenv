@@ -13,3 +13,4 @@ REDIS_DB=[add your redis db in number ex "0"]
 OPENAI_API_KEY=[add your openai api key]
 LOGTAIL_TOKEN=[add your logtail token / or it defaults to console logging]
 LOGTAIL_SOURCE_TOKEN=your_logtail_token_here
+NODE_ENV=production
