@@ -61,7 +61,9 @@ services:
       - redis
       - weaviate
       - minio
-    command: pnpm start:cron
+    command: >
+      sh -c "pnpx prisma migrate deploy &&
+             pnpm start:cron"
     networks:
       - app-network
 
@@ -92,7 +94,9 @@ services:
       - redis
       - weaviate
       - minio
-    command: pnpm start:worker
+    command: >
+      sh -c "pnpx prisma migrate deploy &&
+             pnpm start:worker"
     networks:
       - app-network
 
