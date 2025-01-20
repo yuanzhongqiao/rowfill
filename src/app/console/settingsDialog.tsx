@@ -78,7 +78,8 @@ export default function SettingsPage() {
             <Tabs defaultValue="settings" className="w-full">
                 <TabsList className="w-full">
                     <TabsTrigger className="w-full" value="settings">General Settings</TabsTrigger>
-                    {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" && <TabsTrigger className="w-full" value="billing">Billing</TabsTrigger>}
+                    {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" &&
+                        <TabsTrigger className="w-full" value="billing">Billing</TabsTrigger>}
                 </TabsList>
                 <TabsContent value="settings">
                     <div className="space-y-5">

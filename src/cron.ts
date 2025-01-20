@@ -14,7 +14,8 @@ cron.schedule("*/5 * * * *", async () => {
             return
         }
 
-        await redis.set("cron-lock", "true")
+        // Auto Expire in 2 hours
+        await redis.set("cron-lock", "true", "EX", 60 * 60 * 2)
 
         logger.info("Starting CRON")
 
