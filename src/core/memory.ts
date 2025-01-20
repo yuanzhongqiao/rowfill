@@ -1,5 +1,6 @@
+import { getWeaviateClient } from "@/lib/weaviate"
 import { OpenAI } from "openai"
-import weaviate, { WeaviateClient } from "weaviate-client"
+import { WeaviateClient } from "weaviate-client"
 
 
 async function createTenantOrCollectionIfNotExists(client: WeaviateClient, collectionName: string, organizationId: string) {
@@ -37,9 +38,7 @@ async function createTenantOrCollectionIfNotExists(client: WeaviateClient, colle
 
 export async function indexTextToVectorDB(text: string, organizationId: string, sourceId: string) {
 
-    const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
-        authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
-    })
+    const client = await getWeaviateClient()
 
     await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
@@ -66,9 +65,7 @@ export async function indexTextToVectorDB(text: string, organizationId: string, 
 }
 
 export async function queryVectorDB(text: string, organizationId: string, sourceId: string | null = null) {
-    const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
-        authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
-    })
+    const client = await getWeaviateClient()
 
     await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
@@ -99,9 +96,8 @@ export async function queryVectorDB(text: string, organizationId: string, source
 
 
 export async function deleteVectorIndex(indexId: string, organizationId: string) {
-    const client: WeaviateClient = await weaviate.connectToWeaviateCloud(process.env.WEAVIATE_URL as string, {
-        authCredentials: new weaviate.ApiKey(process.env.WEAVIATE_API_KEY as string)
-    })
+    
+    const client = await getWeaviateClient()
 
     await createTenantOrCollectionIfNotExists(client, "Documents", organizationId)
 
