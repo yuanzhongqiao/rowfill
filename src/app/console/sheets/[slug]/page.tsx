@@ -207,7 +207,43 @@ export default function SheetPage() {
 
 
     const handleExport = async () => {
+        let csvContent = ""
 
+        if (sheet.singleSource) {
+            // Create header row with column names
+            csvContent = sheetColumns.map(col => `"${col.name}"`).join(",") + "\n"
+            
+            // Add data rows
+            for (let rowNum = 1; rowNum <= extractedMaximumRowNumber; rowNum++) {
+                const rowData = sheetColumns.map(column => {
+                    const value = extractedSheetRows[`${rowNum}_${column.id}`]?.value || ""
+                    return `"${value.replace(/"/g, '""')}"`  // Escape quotes in CSV
+                }).join(",")
+                csvContent += rowData + "\n"
+            }
+        }
+
+        if (!sheet.singleSource) {
+            // Create header row with source column and other columns
+            csvContent = `"Source",${sheetColumns.map(col => `"${col.name}"`).join(",")}\n`
+            
+            // Add data rows for each source
+            sheetSources.forEach(source => {
+                const rowData = sheetColumns.map(column => {
+                    const value = columnValues[`${source.id}_${column.id}`]?.value || ""
+                    return `"${value.replace(/"/g, '""')}"`  // Escape quotes in CSV
+                })
+                csvContent += `"${source.source.nickName}",${rowData.join(",")}\n`
+            })
+        }
+        
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.setAttribute("download", `${sheet.name}.csv`)
+        document.body.appendChild(link)
+        link.click()
     }
 
     return (
@@ -234,7 +270,7 @@ export default function SheetPage() {
                         <PiPlay />
                         Run All
                     </Button>
-                    <Button disabled={sheet.extractInProgress || runAlert.open}>
+                    <Button disabled={sheet.extractInProgress || runAlert.open} onClick={handleExport}>
                         <PiDownload />
                         Export as CSV
                     </Button>
