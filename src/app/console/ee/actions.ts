@@ -54,15 +54,15 @@ export async function getPlans() {
         },
         {
             name: "PRO_MONTHLY",
-            price: "$35",
-            credits: "15000",
+            price: `$${process.env.PRO_PLAN_PRICE_MONTHLY}`,
+            credits: `${process.env.PRO_PLAN_CREDITS}`,
             for: "monthly",
             purchaseUrl: "", // TODO: Stripe Link
         },
         {
             name: "PRO_YEARLY",
-            price: "$350",
-            credits: "15000",
+            price: `$${process.env.PRO_PLAN_PRICE_YEARLY}`,
+            credits: `${process.env.PRO_PLAN_CREDITS}`,
             for: "yearly",
             purchaseUrl: "", // TODO: Stripe Link
         },
