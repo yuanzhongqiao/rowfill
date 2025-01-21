@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from "react"
 import { getSourceIndex } from "./actions"
 import { IndexedSource, Source } from "@prisma/client"
