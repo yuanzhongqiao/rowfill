@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
-export default function BillingComponent() {
+export default function BillingComponent({ billingState }: { billingState: Billing }) {
 
     type Plan = {
         name: string
@@ -17,7 +17,7 @@ export default function BillingComponent() {
         purchaseUrl: string
     }
 
-    const [billing, setBilling] = useState<Billing | null>(null)
+    const [billing, setBilling] = useState<Billing | null>(billingState)
     const [plans, setPlans] = useState<Plan[]>([])
     const { toast } = useToast()
     const router = useRouter()
@@ -27,10 +27,13 @@ export default function BillingComponent() {
     }, [])
 
     const fetchData = async () => {
-        const billing = await getBillingAndCreateIfNotExists()
         const plans = await getPlans()
-        setBilling(billing)
         setPlans(plans)
+    }
+
+    const fetchBilling = async () => {
+        const billing = await getBillingAndCreateIfNotExists()
+        setBilling(billing)
     }
 
     const planButtonText = (plan: Plan) => {
@@ -67,12 +70,14 @@ export default function BillingComponent() {
         if (billing && (billing.plan.includes("PRO_")) && plan.name === "FREE") {
             // Handle Downgrade
             await handleDowngradeToFree()
+            await fetchBilling()
             toast({
                 title: "Downgraded to Free",
                 description: "You have been downgraded to the Free plan",
             })
             return
         }
+
 
         toast({
             title: "Failed to update plan",

@@ -50,9 +50,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
     if (!auth) {
       redirect('/auth/login')
     }
-    if (process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true") {
-      await getBillingAndCreateIfNotExists()
-    }
+    await getBillingAndCreateIfNotExists()
     await handleFetchSheets()
   }
 

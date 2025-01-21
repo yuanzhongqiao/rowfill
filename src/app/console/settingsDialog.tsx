@@ -1,16 +1,18 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { updateUserName, updateOrganizationName, addOrganization, switchOrganization, getCurrentOrganization } from './actions'
-import { useToast } from '@/hooks/use-toast'
-import { Label } from '@/components/ui/label'
-import { DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import BillingComponent from './ee/billing'
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { updateUserName, updateOrganizationName, addOrganization, switchOrganization, getCurrentOrganization } from "./actions"
+import { useToast } from "@/hooks/use-toast"
+import { Label } from "@/components/ui/label"
+import { DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import BillingComponent from "./ee/billing"
+import { Billing } from "@prisma/client"
+import { getBillingAndCreateIfNotExists } from "./ee/actions"
 
 type Organization = {
     id: string
@@ -18,20 +20,23 @@ type Organization = {
 }
 
 export default function SettingsPage() {
-    const [userName, setUserName] = useState('')
-    const [organizationName, setOrganizationName] = useState('')
-    const [newOrganizationName, setNewOrganizationName] = useState('')
+    const [userName, setUserName] = useState("")
+    const [organizationName, setOrganizationName] = useState("")
+    const [newOrganizationName, setNewOrganizationName] = useState("")
     const [organizations, setOrganizations] = useState<Organization[]>([])
-    const [currentOrganizationId, setCurrentOrganizationId] = useState<string>('')
+    const [currentOrganizationId, setCurrentOrganizationId] = useState<string>("")
     const { toast } = useToast()
+    const [billing, setBilling] = useState<Billing | null>(null)
 
     useEffect(() => {
         const fetchData = async () => {
             const data = await getCurrentOrganization()
-            setUserName(data.user.name || '')
+            const billing = await getBillingAndCreateIfNotExists()
+            setUserName(data.user.name || "")
             setOrganizationName(data.currentOrganization.name)
             setOrganizations(data.organizations)
             setCurrentOrganizationId(data.currentOrganization.id)
+            setBilling(billing)
         }
         fetchData()
     }, [])
@@ -58,7 +63,7 @@ export default function SettingsPage() {
         e.preventDefault()
         const newOrg = await addOrganization(newOrganizationName)
         setOrganizations([...organizations, newOrg])
-        setNewOrganizationName('')
+        setNewOrganizationName("")
         toast({
             title: "Success",
             description: "New organization added successfully",
@@ -78,8 +83,7 @@ export default function SettingsPage() {
             <Tabs defaultValue="settings" className="w-full">
                 <TabsList className="w-full">
                     <TabsTrigger className="w-full" value="settings">General Settings</TabsTrigger>
-                    {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" &&
-                        <TabsTrigger className="w-full" value="billing">Billing</TabsTrigger>}
+                    {billing && <TabsTrigger className="w-full" value="billing">Billing</TabsTrigger>}
                 </TabsList>
                 <TabsContent value="settings">
                     <div className="space-y-5">
@@ -88,7 +92,7 @@ export default function SettingsPage() {
                                 <CardTitle className="text-lg font-semibold">User Settings</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <form onSubmit={handleUpdateUserName} className='flex flex-col gap-2'>
+                                <form onSubmit={handleUpdateUserName} className="flex flex-col gap-2">
                                     <Label>User Name</Label>
                                     <div className="flex gap-2">
                                         <Input
@@ -106,7 +110,7 @@ export default function SettingsPage() {
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold">Organization Settings</CardTitle>
                             </CardHeader>
-                            <CardContent className='flex flex-col gap-5'>
+                            <CardContent className="flex flex-col gap-5">
                                 <form onSubmit={handleUpdateOrganizationName} className="flex flex-col gap-2">
                                     <Label>Organization Name</Label>
                                     <div className="flex gap-2">
@@ -116,7 +120,7 @@ export default function SettingsPage() {
                                             onChange={(e) => setOrganizationName(e.target.value)}
                                             placeholder="Organization Name"
                                         />
-                                        <Button className='w-1/3' type="submit">Update Name</Button>
+                                        <Button className="w-1/3" type="submit">Update Name</Button>
                                     </div>
                                 </form>
                                 <form onSubmit={handleAddOrganization} className="flex flex-col gap-2">
@@ -131,7 +135,7 @@ export default function SettingsPage() {
                                         <Button className="w-1/3" type="submit" disabled={!newOrganizationName}>Add Organization</Button>
                                     </div>
                                 </form>
-                                <div className='flex flex-col gap-2'>
+                                <div className="flex flex-col gap-2">
                                     <Label>Switch Organization</Label>
                                     <Select onValueChange={handleSwitchOrganization} value={currentOrganizationId}>
                                         <SelectTrigger className="w-full">
@@ -150,9 +154,7 @@ export default function SettingsPage() {
                         </Card>
                     </div>
                 </TabsContent>
-                {process.env.NEXT_PUBLIC_EE_ENABLED && process.env.NEXT_PUBLIC_EE_ENABLED === "true" && <TabsContent value="billing">
-                    <BillingComponent />
-                </TabsContent>}
+                {billing && <BillingComponent billingState={billing} />}
             </Tabs>
         </div>
     )
