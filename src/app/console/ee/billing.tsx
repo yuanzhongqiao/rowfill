@@ -17,7 +17,7 @@ export default function BillingComponent({ billingState }: { billingState: Billi
         purchaseUrl: string
     }
 
-    const [billing, setBilling] = useState<Billing | null>(billingState)
+    const [billing, setBilling] = useState<Billing>(billingState)
     const [plans, setPlans] = useState<Plan[]>([])
     const { toast } = useToast()
     const router = useRouter()
@@ -33,7 +33,9 @@ export default function BillingComponent({ billingState }: { billingState: Billi
 
     const fetchBilling = async () => {
         const billing = await getBillingAndCreateIfNotExists()
-        setBilling(billing)
+        if (billing) {
+            setBilling(billing)
+        }
     }
 
     const planButtonText = (plan: Plan) => {
@@ -88,19 +90,29 @@ export default function BillingComponent({ billingState }: { billingState: Billi
 
     return (
         <div>
-            {/* TODO: Billing goes here */}
-            {plans.map((plan, index) => (
-                <div key={`plan-${index}`} className="flex justify-between items-center p-2 rounded-md border-b-[1px] border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <p className="text-xl flex items-center gap-2 font-bold">{plan.price} / {plan.for}</p>
+            <p className="text-lg font-bold mt-5">Available Credits: {billing.credits}</p>
+            <div className="space-y-3 mt-2">
+                {plans.map((plan, index) => (
+                    <div key={`plan-${index}`} className="flex justify-between items-center p-5 rounded-md border-[1px] border-gray-200">
                         <div className="flex flex-col gap-1">
-                            <p className="text-lg">{plan.name}</p>
-                            <p className="text-sm">{plan.credits}/month</p>
+                            <p className="flex items-center gap-2 font-bold">{plan.price} / {plan.for}</p>
+                            <p>{plan.name}</p>
+                            <p className="text-sm">{plan.credits} Credits / month</p>
                         </div>
+                        <Button
+                            className="w-[150px]"
+                            disabled={planButtonText(plan) === "Current Plan"}
+                            onClick={
+                                () => planButtonText(plan) === "Contact Support" ?
+                                    window.location.href = "mailto:support@rowfill.com" :
+                                    handlePlanButton(plan)
+                            }
+                        >
+                            {planButtonText(plan)}
+                        </Button>
                     </div>
-                    <Button disabled={planButtonText(plan) === "Current Plan" || planButtonText(plan) === "Contact Support"} onClick={() => handlePlanButton(plan)}>{planButtonText(plan)}</Button>
-                </div>
-            ))}
+                ))}
+            </div>
         </div>
     )
 }
