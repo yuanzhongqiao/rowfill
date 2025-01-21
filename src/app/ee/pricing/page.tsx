@@ -6,7 +6,7 @@ import { PiCheck } from "react-icons/pi";
 
 export default async function PricingPage() {
     
-    const eeEnabled = process.env.NEXT_PUBLIC_EE_ENABLED === 'true'
+    const eeEnabled = process.env.EE_ENABLED && process.env.EE_ENABLED === 'true'
     
     if (!eeEnabled) {
         return (
