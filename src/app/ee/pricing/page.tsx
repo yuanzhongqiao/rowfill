@@ -5,20 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Image from "next/image"
 import Link from "next/link"
 import { PiCheck } from "react-icons/pi"
-import { checkEE } from "../actions"
+import { getPricingInfo } from "./actions"
 import { useEffect, useState } from "react"
 
 export default function PricingPage() {
 
-    const [eeEnabled, setEeEnabled] = useState(false)
+    const [pricingInfo, setPricingInfo] = useState({
+        ee: false,
+        pricing: {
+            monthly: "",
+            yearly: "",
+            credits: ""
+        }
+    })
 
     useEffect(() => {
         (async () => {
-            setEeEnabled(await checkEE())
+            const pricingInfo = await getPricingInfo()
+            setPricingInfo(pricingInfo)
         })()
     }, [])
 
-    if (!eeEnabled) {
+    if (!pricingInfo.ee) {
         return (
             <div className="flex flex-col gap-5 items-center justify-center h-screen">
                 <Image src="/logo.svg" alt="404" width={50} height={50} />
@@ -33,11 +41,11 @@ export default function PricingPage() {
                 <CardHeader className="flex flex-col items-center">
                     <Image src="/logo.svg" alt="Rowfill Logo" width={50} height={50} />
                     <CardTitle className="text-lg pt-2">Professional Plan</CardTitle>
-                    <p className="text-lg font-bold">Starts at ${process.env.PRO_PLAN_PRICE_MONTHLY}/month</p>
+                    <p className="text-lg font-bold">Starts at ${pricingInfo.pricing.monthly}/month</p>
                     <Button>Get Started</Button>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-2 px-5">
-                    <p className="flex items-center gap-2"><PiCheck /> {process.env.PRO_PLAN_CREDITS} Credits</p>
+                    <p className="flex items-center gap-2"><PiCheck /> {pricingInfo.pricing.credits} Credits</p>
                     <p className="flex items-center gap-2"><PiCheck /> Unlimited Sheets</p>
                     <p className="flex items-center gap-2"><PiCheck /> Unlimited Sources</p>
                     <p className="flex items-center gap-2"><PiCheck /> AI Answering Agent</p>

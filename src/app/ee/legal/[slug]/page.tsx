@@ -1,14 +1,11 @@
 import axios from "axios"
 import Image from "next/image"
-import { checkEE } from "../../actions"
 
 export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
     let legalPageContent = ""
 
-    const eeEnabled = await checkEE()
-
-    if (!eeEnabled) {
+    if (!process.env.EE_ENABLED || process.env.EE_ENABLED === "false") {
         return (
             <div className="flex flex-col gap-5 items-center justify-center h-screen">
                 <Image src="/logo.svg" alt="404" width={50} height={50} />
