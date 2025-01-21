@@ -1,11 +1,12 @@
 import axios from "axios"
 import Image from "next/image"
+import { checkEE } from "../../actions"
 
 export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
     let legalPageContent = ""
 
-    const eeEnabled = process.env.EE_ENABLED && process.env.EE_ENABLED === 'true'
+    const eeEnabled = await checkEE()
 
     if (!eeEnabled) {
         return (
