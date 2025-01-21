@@ -5,8 +5,10 @@ import Link from "next/link";
 import { PiCheck } from "react-icons/pi";
 
 export default async function PricingPage() {
-
-    if (!process.env.EE_ENABLED || process.env.EE_ENABLED === "false") {
+    
+    const eeEnabled = process.env.NEXT_PUBLIC_EE_ENABLED === 'true'
+    
+    if (!eeEnabled) {
         return (
             <div className="flex flex-col gap-5 items-center justify-center h-screen">
                 <Image src="/logo.svg" alt="404" width={50} height={50} />
