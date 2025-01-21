@@ -6,7 +6,7 @@ import { PiCheck } from "react-icons/pi";
 
 export default function PricingPage() {
 
-    if (!process.env.EE_ENABLED || process.env.EE_ENABLED !== "true") {
+    if (!process.env.EE_ENABLED || process.env.EE_ENABLED === "false") {
         return (
             <div className="flex flex-col gap-5 items-center justify-center h-screen">
                 <Image src="/logo.svg" alt="404" width={50} height={50} />
