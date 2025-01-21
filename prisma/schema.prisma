@@ -29,6 +29,7 @@ enum ColumnDataType {
   OBJECT
 }
 
+// ONLY for EE Usage
 enum Plan {
   FREE
   PRO
@@ -75,6 +76,7 @@ model Member {
   @@id([userId, organizationId])
 }
 
+// ONLY for EE Usage
 model Billing {
   organizationId String       @id @unique
   organization   Organization @relation(fields: [organizationId], references: [id])

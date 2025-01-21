@@ -45,6 +45,8 @@ next-env.d.ts
 
 # docker
 protected-docker-compose.yml
+protected-docker-compose-cloud.yml
+
 
 # production server
 /dist
