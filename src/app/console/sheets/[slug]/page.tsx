@@ -19,6 +19,7 @@ import { produce } from "immer"
 import { Alert } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import SourceIndexComponent from "./sourceIndex"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function SheetPage() {
     const { slug } = useParams()
@@ -251,102 +252,60 @@ export default function SheetPage() {
                     </DropdownMenu>
                 </div>
             </div>
-            <Table className="table-fixed">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="border-r-[1px] bg-gray-100 border-gray-200">
-                            {sheet.singleSource ? "Rows" : "Sources"}
-                        </TableHead>
-                        {sheetColumns.map((column) => (
-                            <TableHead key={column.id} className="border-r-[1px] border-gray-200">
-                                <div className="flex items-center justify-between">
-                                    {column.name}
-                                    <div className="flex items-center gap-1">
-                                        {!sheet.singleSource && <button disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiListBold className="text-black" /></button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => { setColumnDialogData(column); setColumnDialogOpen(true) }}>
-                                                    <PiPencil /> Edit Column
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleDeleteColumn(column.id)}>
-                                                    <PiTrash className="text-red-500" /> Delete Column
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </div>
+            <ScrollArea className="overflow-y-auto" style={{ height: "calc(100vh - 50px)" }}>
+                <Table className="table-fixed">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="border-r-[1px] bg-gray-100 border-gray-200">
+                                {sheet.singleSource ? "Rows" : "Sources"}
                             </TableHead>
-                        ))}
-                        <TableHead className="bg-gray-100">
-                            <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2 hover:underline">
-                                <PiPlus />Add Column
-                            </button>
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {!sheet.singleSource && sheetSources.map((source) => (
-                        <TableRow key={source.id}>
-                            <TableCell className="border-r-[1px] border-gray-200 bg-gray-50">{source.source.nickName}</TableCell>
-                            {sheetColumns.map((column) => {
-                                const columnValue = columnValues[`${source.id}_${column.id}`]
-                                return (
-                                    <TableCell className="border-r-[1px] border-gray-200" key={`${source.id}_${column.id}`}>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                {columnValue.value === "Loading" && <PiSpinner className="animate-spin" />}
-                                                {columnValue.value === "Error" && <PiWarning className="text-red-500" />}
-                                                {columnValue.value || "No value"}
-                                            </div>
-                                            <Sheet>
-                                                <SheetTrigger asChild>
-                                                    <button disabled={columnValue.value === "Loading" || !columnValue.value} className="hover:bg-gray-200 bg-gray-100 rounded p-2">
-                                                        <PiArrowUpRight className="text-black" />
-                                                    </button>
-                                                </SheetTrigger>
-                                                <SheetContent className="h-screen overflow-y-auto">
-                                                    <SheetHeader>
-                                                        <SheetTitle>{column.name}</SheetTitle>
-                                                    </SheetHeader>
-                                                    <div className="mt-4 space-y-4">
-                                                        <div className="p-4 rounded-lg border">
-                                                            <h2 className="font-bold">Answer</h2>
-                                                            <p>{columnValue.value}</p>
-                                                        </div>
-                                                        <Separator />
-                                                        {columnValue.indexedSourceId && <SourceIndexComponent sourceIndexId={columnValue.indexedSourceId} />}
-                                                    </div>
-                                                </SheetContent>
-                                            </Sheet>
+                            {sheetColumns.map((column) => (
+                                <TableHead key={column.id} className="border-r-[1px] border-gray-200">
+                                    <div className="flex items-center justify-between">
+                                        {column.name}
+                                        <div className="flex items-center gap-1">
+                                            {!sheet.singleSource && <button disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleRunColumn(column.id)} className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiPlayFill className="text-green-600" /></button>}
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="hover:bg-gray-200 bg-gray-100 rounded p-2"><PiListBold className="text-black" /></button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => { setColumnDialogData(column); setColumnDialogOpen(true) }}>
+                                                        <PiPencil /> Edit Column
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem disabled={sheet.extractInProgress || runAlert.open} onClick={() => handleDeleteColumn(column.id)}>
+                                                        <PiTrash className="text-red-500" /> Delete Column
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
-                                    </TableCell>
-                                )
-                            })}
-                            <TableCell className="bg-gray-50 text-gray-500 hover:underline">
-                                <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2">
-                                    <PiPlus />
-                                    Add Column
+                                    </div>
+                                </TableHead>
+                            ))}
+                            <TableHead className="bg-gray-100">
+                                <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2 hover:underline">
+                                    <PiPlus />Add Column
                                 </button>
-                            </TableCell>
+                            </TableHead>
                         </TableRow>
-                    ))}
-                    {sheet.singleSource && Array.from({ length: extractedMaximumRowNumber }).map((_, key) => (
-                        <TableRow key={key}>
-                            {sheetColumns.map((column) => {
-                                const columnValue = extractedSheetRows[`${key}_${column.id}`]
-                                if (columnValue) {
+                    </TableHeader>
+                    <TableBody>
+                        {!sheet.singleSource && sheetSources.map((source) => (
+                            <TableRow key={source.id}>
+                                <TableCell className="border-r-[1px] border-gray-200 bg-gray-50">{source.source.nickName}</TableCell>
+                                {sheetColumns.map((column) => {
+                                    const columnValue = columnValues[`${source.id}_${column.id}`]
                                     return (
-                                        <TableCell className="border-r-[1px] border-gray-200" key={`${key}_${column.id}`}>
+                                        <TableCell className="border-r-[1px] border-gray-200" key={`${source.id}_${column.id}`}>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
+                                                    {columnValue.value === "Loading" && <PiSpinner className="animate-spin" />}
+                                                    {columnValue.value === "Error" && <PiWarning className="text-red-500" />}
                                                     {columnValue.value || "No value"}
                                                 </div>
                                                 <Sheet>
                                                     <SheetTrigger asChild>
-                                                        <button className="hover:bg-gray-200 bg-gray-100 rounded p-2">
+                                                        <button disabled={columnValue.value === "Loading" || !columnValue.value} className="hover:bg-gray-200 bg-gray-100 rounded p-2">
                                                             <PiArrowUpRight className="text-black" />
                                                         </button>
                                                     </SheetTrigger>
@@ -367,37 +326,82 @@ export default function SheetPage() {
                                             </div>
                                         </TableCell>
                                     )
-                                } else {
-                                    return (
-                                        <TableCell className="border-r-[1px] border-gray-200" key={`${key}_${column.id}`}></TableCell>
-                                    )
-                                }
-                            })}
+                                })}
+                                <TableCell className="bg-gray-50 text-gray-500 hover:underline">
+                                    <button onClick={() => setColumnDialogOpen(true)} className="flex items-center gap-2">
+                                        <PiPlus />
+                                        Add Column
+                                    </button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {sheet.singleSource && Array.from({ length: extractedMaximumRowNumber }).map((_, key) => (
+                            <TableRow key={key + 1}>
+                                <TableCell className="border-r-[1px] border-gray-200 bg-gray-50">{key + 1}</TableCell>
+                                {sheetColumns.map((column) => {
+                                    const columnValue = extractedSheetRows[`${key + 1}_${column.id}`]
+                                    if (columnValue) {
+                                        return (
+                                            <TableCell className="border-r-[1px] border-gray-200" key={`${key + 1}_${column.id}`}>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        {columnValue.value || "No value"}
+                                                    </div>
+                                                    <Sheet>
+                                                        <SheetTrigger asChild>
+                                                            <button className="hover:bg-gray-200 bg-gray-100 rounded p-2">
+                                                                <PiArrowUpRight className="text-black" />
+                                                            </button>
+                                                        </SheetTrigger>
+                                                        <SheetContent className="h-screen overflow-y-auto">
+                                                            <SheetHeader>
+                                                                <SheetTitle>{column.name}</SheetTitle>
+                                                            </SheetHeader>
+                                                            <div className="mt-4 space-y-4">
+                                                                <div className="p-4 rounded-lg border">
+                                                                    <h2 className="font-bold">Answer</h2>
+                                                                    <p>{columnValue.value}</p>
+                                                                </div>
+                                                                <Separator />
+                                                                {columnValue.indexedSourceId && <SourceIndexComponent sourceIndexId={columnValue.indexedSourceId} />}
+                                                            </div>
+                                                        </SheetContent>
+                                                    </Sheet>
+                                                </div>
+                                            </TableCell>
+                                        )
+                                    } else {
+                                        return (
+                                            <TableCell className="border-r-[1px] border-gray-200" key={`${key + 1}_${column.id}`}></TableCell>
+                                        )
+                                    }
+                                })}
+                            </TableRow>
+                        ))}
+                        <TableRow>
+                            <TableCell className="bg-gray-100 border-r-[1px] border-gray-200">
+                                <Dialog open={sourcesDialogOpen} onOpenChange={setSourcesDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        {!sheet.singleSource || (sheet.singleSource && sheetSources.length < 1) ?
+                                            <button className="flex items-center gap-2 hover:underline">
+                                                <PiPlus />
+                                                Add Source
+                                            </button>
+                                            : <button className="flex items-center gap-2 hover:underline">
+                                                <PiPencil />
+                                                Edit Source
+                                            </button>}
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <SourcesDialog singleSource={sheet.singleSource} sheetId={sheet.id} onAdd={() => { fetchData(); setSourcesDialogOpen(false) }} />
+                                    </DialogContent>
+                                </Dialog>
+                            </TableCell>
+                            <TableCell colSpan={sheetColumns.length + 1} className="bg-gray-50"></TableCell>
                         </TableRow>
-                    ))}
-                    <TableRow>
-                        <TableCell className="bg-gray-100 border-r-[1px] border-gray-200">
-                            <Dialog open={sourcesDialogOpen} onOpenChange={setSourcesDialogOpen}>
-                                <DialogTrigger asChild>
-                                    {!sheet.singleSource || (sheet.singleSource && sheetSources.length < 1) ?
-                                        <button className="flex items-center gap-2 hover:underline">
-                                            <PiPlus />
-                                            Add Source
-                                        </button>
-                                        : <button className="flex items-center gap-2 hover:underline">
-                                            <PiPencil />
-                                            Edit Source
-                                        </button>}
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <SourcesDialog singleSource={sheet.singleSource} sheetId={sheet.id} onAdd={() => { fetchData(); setSourcesDialogOpen(false) }} />
-                                </DialogContent>
-                            </Dialog>
-                        </TableCell>
-                        <TableCell colSpan={sheetColumns.length + 1} className="bg-gray-50"></TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
+                    </TableBody>
+                </Table>
+            </ScrollArea>
             <Dialog open={columnDialogOpen} onOpenChange={(open) => { setColumnDialogOpen(open); setColumnDialogData(null) }}>
                 <ColumnDialog open={columnDialogOpen} defaultData={columnDialogData} sheetId={sheet.id} onSubmit={() => { fetchData(); setColumnDialogOpen(false); setColumnDialogData(null) }} />
             </Dialog>

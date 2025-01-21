@@ -41,8 +41,6 @@ export async function extractTableToSheet(sheetId: string) {
             }
         })
 
-        let rowCount = 1
-
         const openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY
         })
@@ -52,8 +50,6 @@ export async function extractTableToSheet(sheetId: string) {
                 sourceId: sheet.sheetSources[0].sourceId
             }
         })
-
-
 
         const rowSchema = z.object(
             Object.fromEntries(
@@ -66,7 +62,7 @@ export async function extractTableToSheet(sheetId: string) {
 
 
         if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
-            const creditsAvailable = await checkCredits(sheet.organizationId, indexedSources.length)
+            const creditsAvailable = await checkCredits(sheet.organizationId, indexedSources.length * 10)
             if (!creditsAvailable) {
                 throw new Error("No credits available")
             }
@@ -96,7 +92,12 @@ export async function extractTableToSheet(sheetId: string) {
 
             const output = response.choices[0].message.parsed
 
+            let rowCount = 1
+
+            // logger.info(JSON.stringify(output))
+
             if (output) {
+
                 for (let row of output.rows) {
 
                     for (let columnName in row) {
@@ -114,15 +115,16 @@ export async function extractTableToSheet(sheetId: string) {
                                     indexedSourceId: indexedSource.id
                                 }
                             })
-                            rowCount += 1
                         }
                     }
+                    
+                    rowCount += 1
                 }
             }
         }
 
         if (process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
-            await consumeCredits(sheet.organizationId, indexedSources.length)
+            await consumeCredits(sheet.organizationId, indexedSources.length * 10)
         }
 
         await prisma.sheet.update({
