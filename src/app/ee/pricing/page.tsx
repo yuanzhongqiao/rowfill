@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PiCheck } from "react-icons/pi";
 
-export default function PricingPage() {
+export default async function PricingPage() {
 
     if (!process.env.EE_ENABLED || process.env.EE_ENABLED === "false") {
         return (
