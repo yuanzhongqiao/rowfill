@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useForm } from "react-hook-form"

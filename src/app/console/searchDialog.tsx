@@ -1,13 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useEffect, useRef, useState } from "react";
-import { PiFile, PiImage, PiMagnifyingGlassBold, PiPaperPlaneTilt, PiRobotFill, PiSpinner, PiUserCircleFill } from "react-icons/pi";
-import { sendMessageToSearch } from "./actions";
+"use client"
+
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useEffect, useRef, useState } from "react"
+import { PiFile, PiImage, PiMagnifyingGlassBold, PiPaperPlaneTilt, PiRobotFill, PiSpinner, PiUserCircleFill } from "react-icons/pi"
+import { sendMessageToSearch } from "./actions"
 import ReactMarkdown from "react-markdown"
 import { produce } from "immer"
-import Image from "next/image";
-import { stripCodeBlockBackTicks } from "@/lib/utils";
+import Image from "next/image"
+import { stripCodeBlockBackTicks } from "@/lib/utils"
 
 export default function SearchDialog({ open }: { open: boolean }) {
 
@@ -151,8 +153,8 @@ export default function SearchDialog({ open }: { open: boolean }) {
                     <textarea
                         onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleSendMessage();
+                                e.preventDefault()
+                                handleSendMessage()
                             }
                         }}
                         disabled={sending}
