@@ -2,6 +2,23 @@ import axios from "axios"
 import { Poppler } from "node-poppler"
 import fs from "fs"
 import { getPresignedUrlForUpload } from "./file"
+import { logger } from "./logger"
+
+function getPDFPageImagePath(baseFilename: string, pageNum: number) {
+    const patterns = [
+        `${baseFilename}-${pageNum}.png`,
+        `${baseFilename}-0${pageNum}.png`
+    ];
+
+    for (const pattern of patterns) {
+        if (fs.existsSync(pattern)) {
+            return pattern
+        }
+    }
+
+    throw new Error(`Could not find page ${pageNum} with any known filename pattern`);
+}
+
 
 export async function convertPdfToImages(path: string, filename: string): Promise<Array<string>> {
 
@@ -27,15 +44,16 @@ export async function convertPdfToImages(path: string, filename: string): Promis
         await poppler.pdfToCairo(res.data, filename, {
             firstPageToConvert: i,
             lastPageToConvert: i,
-            pngFile: true
+            pngFile: true,
         })
 
-        const imgFile = fs.readFileSync(i > 9 ? `${filename}-${i}.png` : `${filename}-0${i}.png`)
+        const path = getPDFPageImagePath(filename, i)
+        const imgFile = fs.readFileSync(path)
         const uploadPageFile = await getPresignedUrlForUpload(`${filename}-${i}.png`)
         const instance = axios.create()
         await instance.put(uploadPageFile.url, imgFile)
         images.push(uploadPageFile.filename)
-        fs.unlinkSync(i > 9 ? `${filename}-${i}.png` : `${filename}-0${i}.png`)
+        fs.unlinkSync(path)
     }
 
     return images
