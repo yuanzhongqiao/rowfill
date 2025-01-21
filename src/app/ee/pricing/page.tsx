@@ -1,13 +1,23 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Image from "next/image";
-import Link from "next/link";
-import { PiCheck } from "react-icons/pi";
+"use client"
 
-export default async function PricingPage() {
-    
-    const eeEnabled = process.env.EE_ENABLED && process.env.EE_ENABLED === 'true'
-    
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Image from "next/image"
+import Link from "next/link"
+import { PiCheck } from "react-icons/pi"
+import { checkEE } from "../actions"
+import { useEffect, useState } from "react"
+
+export default function PricingPage() {
+
+    const [eeEnabled, setEeEnabled] = useState(false)
+
+    useEffect(() => {
+        (async () => {
+            setEeEnabled(await checkEE())
+        })()
+    }, [])
+
     if (!eeEnabled) {
         return (
             <div className="flex flex-col gap-5 items-center justify-center h-screen">
