@@ -154,7 +154,7 @@ export default function SettingsPage() {
                         </Card>
                     </div>
                 </TabsContent>
-                {billing && <BillingComponent billingState={billing} />}
+                {billing && <TabsContent value="billing"><BillingComponent billingState={billing} /></TabsContent>}
             </Tabs>
         </div>
     )

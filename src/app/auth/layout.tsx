@@ -5,6 +5,7 @@ import { useEffect } from "react"
 import { checkAuth } from "../console/actions"
 import { redirect } from "next/navigation"
 import Image from "next/image"
+import Link from "next/link"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
 
@@ -31,6 +32,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </CardContent>
       </Card>
+      <div className="absolute bottom-5 right-5 flex gap-3 items-center">
+        <Link href="/ee/legal/privacy-policy">Privacy Policy</Link>
+        <Link href="/ee/legal/refund-policy">Refund Policy</Link>
+        <Link href="/ee/legal/terms-of-service">Terms of Service</Link>
+      </div>
     </div>
   )
 }

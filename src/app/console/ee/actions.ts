@@ -47,21 +47,21 @@ export async function getPlans() {
     return [
         {
             name: "FREE",
-            price: "0",
+            price: "$0",
             credits: "1000",
             for: "lifetime",
             purchaseUrl: "",
         },
         {
             name: "PRO_MONTHLY",
-            price: "35",
+            price: "$35",
             credits: "15000",
             for: "monthly",
             purchaseUrl: "", // TODO: Stripe Link
         },
         {
             name: "PRO_YEARLY",
-            price: "350",
+            price: "$350",
             credits: "15000",
             for: "yearly",
             purchaseUrl: "", // TODO: Stripe Link

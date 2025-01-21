@@ -6,7 +6,7 @@ import { PiDatabaseBold, PiGearBold, PiMagnifyingGlass, PiPlusBold, PiTableBold 
 import { Button } from "@/components/ui/button"
 import { AddSheetDialog } from './sheetsDialog'
 import { checkAuth, fetchSheets } from './actions'
-import { Sheet } from '@prisma/client'
+import { Billing, Sheet } from '@prisma/client'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import SettingsPage from './settingsDialog'
@@ -23,12 +23,11 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
   const pathname = usePathname()
   const { dueForRefresh, setDueForRefresh } = useSheetStore()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [billing, setBilling] = useState<Billing | null>(null)
 
   useEffect(() => {
     init()
   }, [])
-
-
 
   useEffect(() => {
     // Check if /sheets/slug pattern is in the pathname
@@ -50,7 +49,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
     if (!auth) {
       redirect('/auth/login')
     }
-    await getBillingAndCreateIfNotExists()
+    setBilling(await getBillingAndCreateIfNotExists())
     await handleFetchSheets()
   }
 
@@ -92,6 +91,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
           </div>
           <div className="flex flex-col gap-2">
             <Separator className="my-2" />
+            {billing && <p className="text-sm font-bold mb-2">Available Credits: {billing.credits}</p>}
             <Dialog>
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full flex justify-start">
