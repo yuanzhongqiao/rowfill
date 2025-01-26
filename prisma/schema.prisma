@@ -90,8 +90,8 @@ model Billing {
 model Sheet {
   id                 String              @id @default(uuid())
   name               String
-  createdById        String
-  createdBy          User                @relation(fields: [createdById], references: [id])
+  createdById        String?
+  createdBy          User?               @relation(fields: [createdById], references: [id])
   organizationId     String
   organization       Organization        @relation(fields: [organizationId], references: [id])
   singleSource       Boolean             @default(false)
@@ -114,8 +114,8 @@ model Source {
   indexRunCount  Int             @default(0)
   organizationId String
   organization   Organization    @relation(fields: [organizationId], references: [id])
-  uploadedById   String
-  uploadedBy     User            @relation(fields: [uploadedById], references: [id])
+  uploadedById   String?
+  uploadedBy     User?           @relation(fields: [uploadedById], references: [id])
   createdAt      DateTime        @default(now())
   sheets         SheetSource[]
   indexedSources IndexedSource[]
