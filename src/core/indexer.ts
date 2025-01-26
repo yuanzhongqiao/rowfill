@@ -83,19 +83,24 @@ export async function indexSource(sourceId: string) {
             // TODO: Index Docx
         }
 
-        const user = await prisma.user.findFirstOrThrow({
-            where: {
-                id: source.uploadedById
-            }
-        })
 
         logger.info(`The source ${source.id} has been indexed`)
 
-        await sendEmail(
-            user.email,
-            "Source Indexed",
-            `The source you uploaded, ${source.nickName} has been indexed.`
-        )
+        if (source.uploadedById) {
+
+            const user = await prisma.user.findFirstOrThrow({
+                where: {
+                    id: source.uploadedById
+                }
+            })
+
+            await sendEmail(
+                user.email,
+                "Source Indexed",
+                `The source you uploaded, ${source.nickName} has been indexed.`
+            )
+
+        }
 
 
         await prisma.source.update({

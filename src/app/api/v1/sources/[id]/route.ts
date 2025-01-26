@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { logger } from "@/lib/logger"
 
-export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         // Get API key from Authorization header
         const authHeader = req.headers.get("authorization")
@@ -24,10 +21,12 @@ export async function GET(
             return NextResponse.json({ error: "Invalid API key" }, { status: 401 })
         }
 
+        const { id } = await params
+
         // Get source by ID and verify it belongs to the organization
         const source = await prisma.source.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 organizationId: organization.id
             },
         })
