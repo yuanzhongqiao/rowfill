@@ -1,33 +1,85 @@
 ---
-title: 'Rowfill'
-description: 'Example section for showcasing API endpoints'
+title: 'Rowfill API Reference'
+description: 'Complete API reference documentation for Rowfill'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Introduction
 
-## Welcome
-
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+Welcome to the Rowfill API documentation. Our REST API enables you to programmatically interact with Rowfill's data extraction and querying capabilities.
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using Bearer tokens. Include your API token in the Authorization header:
+
+```bash
+Authorization: Bearer <your_api_token>
+```
+
+## Base URL
+
+```
+https://cloud.rowfill.com/api/v1
+```
+
+## Core Endpoints
+
+### Sources
+
+Sources represent your data connections and files that can be processed by Rowfill.
+
+<Card title="Sources API" icon="database">
+  - Create and manage data sources
+  - Extract data from sources
+  - Monitor extraction status
+</Card>
+
+### Queries
+
+Query endpoints allow you to retrieve and analyze data from your sources.
+
+<Card title="Query API" icon="magnifying-glass">
+  - Execute queries across your data
+  - Filter and transform results
+  - Optimize query performance
+</Card>
+
+## Rate Limits
+
+The API has rate limits to ensure fair usage:
+- 100 requests per minute per API token
+- 1000 requests per hour per API token
+
+<Note>
+  Contact support to request increased rate limits for your account.
+</Note>
+
+## Response Format
+
+All responses are returned in JSON format and include a standard structure:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "success": true,
+  "data": {
+    // Response data
+  },
+  "error": null
+}
 ```
+
+## Error Handling
+
+Errors follow a consistent format:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "error_code",
+    "message": "Human readable error message"
+  }
+}
+```
+
+For detailed endpoint documentation, explore the sections below.
