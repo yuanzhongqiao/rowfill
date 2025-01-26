@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         // Get API key from Authorization header
         const authHeader = req.headers.get("authorization")
@@ -20,10 +23,12 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ error: "Invalid API key" }, { status: 401 })
         }
 
+        const { id } = await params
+
         // Get the sheet
         const sheet = await prisma.sheet.findFirst({
             where: {
-                id: params.id,
+                id: id,
                 organizationId: organization.id
             },
             include: {

@@ -117,7 +117,7 @@ export async function extractTableToSheet(sheetId: string) {
                             })
                         }
                     }
-                    
+
                     rowCount += 1
                 }
             }
@@ -136,11 +136,14 @@ export async function extractTableToSheet(sheetId: string) {
             }
         })
 
-        await sendEmail(
-            sheet.createdBy.email,
-            "Extraction Complete",
-            `The extraction for sheet ${sheet.name} has been completed. You can now view the data in the sheet.`
-        )
+        if (sheet.createdBy) {
+
+            await sendEmail(
+                sheet.createdBy.email,
+                "Extraction Complete",
+                `The extraction for sheet ${sheet.name} has been completed. You can now view the data in the sheet.`
+            )
+        }
 
     } catch (err) {
         logger.error(err)
@@ -154,11 +157,13 @@ export async function extractTableToSheet(sheetId: string) {
             }
         })
 
-        await sendEmail(
-            sheet.createdBy.email,
-            "Extraction Failed",
-            `The extraction for sheet ${sheet.name} has failed. Please try again later.`
-        )
+        if (sheet.createdBy) {
+            await sendEmail(
+                sheet.createdBy.email,
+                "Extraction Failed",
+                `The extraction for sheet ${sheet.name} has failed. Please try again later.`
+            )
+        }
     }
 
 }
