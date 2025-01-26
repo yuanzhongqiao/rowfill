@@ -27,7 +27,7 @@ Rowfill helps extract, analyze, and process data from complex documents, images,
 
 ## 📚 Documentation
 
-Visit our [documentation](https://rowfill.com/docs) for:
+Visit our [documentation](https://docs.rowfill.com) for:
 - Detailed integration guides
 - API reference
 - Best practices
