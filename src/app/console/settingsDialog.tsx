@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updateUserName, updateOrganizationName, addOrganization, switchOrganization, getCurrentOrganization } from "./actions"
+import { updateUserName, updateOrganizationName, addOrganization, switchOrganization, getCurrentOrganization, resetOrganizationApiKey } from "./actions"
 import { useToast } from "@/hooks/use-toast"
 import { Label } from "@/components/ui/label"
 import { DialogTitle } from "@/components/ui/dialog"
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import BillingComponent from "./ee/billing"
 import { Billing } from "@prisma/client"
 import { getBillingAndCreateIfNotExists } from "./ee/actions"
+import { PiArrowsClockwise, PiClipboard } from "react-icons/pi"
 
 type Organization = {
     id: string
@@ -25,8 +26,10 @@ export default function SettingsPage() {
     const [newOrganizationName, setNewOrganizationName] = useState("")
     const [organizations, setOrganizations] = useState<Organization[]>([])
     const [currentOrganizationId, setCurrentOrganizationId] = useState<string>("")
+    const [apiKey, setApiKey] = useState<string>("")
     const { toast } = useToast()
     const [billing, setBilling] = useState<Billing | null>(null)
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -37,6 +40,7 @@ export default function SettingsPage() {
             setOrganizations(data.organizations)
             setCurrentOrganizationId(data.currentOrganization.id)
             setBilling(billing)
+            setApiKey(data.currentOrganization.apiKey)
         }
         fetchData()
     }, [])
@@ -73,6 +77,30 @@ export default function SettingsPage() {
     const handleSwitchOrganization = async (organizationId: string) => {
         await switchOrganization(organizationId)
         window.location.reload()
+    }
+
+    const handleCopyApiKey = () => {
+        navigator.clipboard.writeText(apiKey)
+        toast({
+            title: "Success",
+            description: "API Key copied to clipboard",
+        })
+    }
+
+    const resetApiKey = async () => {
+        try {
+            await resetOrganizationApiKey()
+            toast({
+                title: "Success",
+                description: "API Key reset successfully",
+            })
+        } catch (err) {
+            toast({
+                title: "Error",
+                description: "Failed to reset API Key",
+                variant: "destructive"
+            })
+        }
     }
 
     return (
@@ -149,6 +177,21 @@ export default function SettingsPage() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">API Keys</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Label>API Key</Label>
+                                <div className="space-y-2">
+                                    <Input value={apiKey} disabled />
+                                    <div className="flex gap-2">
+                                        <Button onClick={handleCopyApiKey} size="icon"><PiClipboard /></Button>
+                                        <Button onClick={resetApiKey} size="icon"><PiArrowsClockwise /></Button>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
