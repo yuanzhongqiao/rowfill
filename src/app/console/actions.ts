@@ -7,6 +7,7 @@ import { sign } from "jsonwebtoken"
 import { getPresignedUrlForGet, getPresignedUrlForUpload } from "@/lib/file"
 import { queryVectorDB } from "@/core/memory"
 import { generateAnswer } from "@/core/answer"
+import { v4 as uuidv4 } from "uuid"
 
 export async function fetchSheets() {
     const { organizationId, userId } = await getAuthToken()
@@ -85,6 +86,16 @@ export async function updateOrganizationName(name: string) {
         where: { id: organizationId },
         data: { name },
     })
+}
+
+export async function resetOrganizationApiKey() {
+    const { organizationId } = await getAuthToken()
+    const apiKey = uuidv4()
+    await prisma.organization.update({
+        where: { id: organizationId },
+        data: { apiKey: apiKey }
+    })
+    return apiKey
 }
 
 export async function addOrganization(name: string) {
@@ -174,7 +185,7 @@ export async function sendMessageToSearch(history: Array<{ role: "user" | "assis
 
     const indexId = await queryVectorDB(message, organizationId)
 
-    if(!indexId) {
+    if (!indexId) {
         return {
             answer: "No documents found to answer this question",
             sources: []
