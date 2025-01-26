@@ -1,0 +1,78 @@
+---
+title: Self Host
+description: "How to self-host Rowfill"
+---
+
+Setup **Rowfill in less than 5 minutes**.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Docker
+- Docker Compose
+- Git
+
+## Getting Started
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/harishdeivanayagam/rowfill
+```
+
+
+
+2. Configure environment variables:
+   - Reference the sample environment variables in [mockenv](https://github.com/harishdeivanayagam/rowfill/tree/master/mockenv)
+   - Create your `.env` file based on the mockenv template
+
+## Third-Party Requirements
+
+You'll need to set up the following:
+
+- **OpenAI API Key**: Required for AI functionality
+- **SMTP Service**: Choose one of:
+  - AWS SES
+  - Resend
+  - Similar email service
+
+Note: The following services are automatically installed via Docker Compose:
+- Weaviate
+- PostgreSQL
+- Redis
+
+## System Components
+
+Rowfill consists of three main modules:
+
+1. **Next.js Server**: Main web application
+2. **Worker**: Background processing
+3. **CRON Job**: Scheduled tasks
+
+## Deployment
+
+Run the application using Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+
+This command will:
+- Set up all required databases
+- Start all three system components
+- Configure networking between services
+
+## Verification
+
+To verify your installation:
+
+1. Access the web interface at `http://localhost:3000`
+2. Check Docker container status:
+
+```bash
+docker ps
+```
+
+This should show all three containers running.
