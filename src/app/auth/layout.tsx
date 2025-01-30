@@ -32,11 +32,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {children}
         </CardContent>
       </Card>
-      <div className="absolute bottom-5 right-5 flex gap-3 items-center">
-        <Link href="/ee/legal/privacy-policy">Privacy Policy</Link>
-        <Link href="/ee/legal/refund-policy">Refund Policy</Link>
-        <Link href="/ee/legal/terms-of-service">Terms of Service</Link>
-      </div>
     </div>
   )
 }
