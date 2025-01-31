@@ -79,7 +79,7 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
               {sheets.map((sheet) => (
                 <button
                   onClick={() => router.push(`/console/sheets/${sheet.id}`)}
-                  className={`py-2 px-2 rounded-md flex gap-2 items-center justify-start hover:bg-gray-200 transition-all ${pathname.includes(sheet.id) ? 'bg-gray-200' : ''}`}
+                  className={`py-2 px-2 max-w-[200px] overflow-hidden text-ellipsis rounded-md flex gap-2 items-center justify-start hover:bg-gray-200 transition-all ${pathname.includes(sheet.id) ? 'bg-gray-200' : ''}`}
                   key={sheet.id}
                 >
                   <PiTableBold className="text-lg font-bold" />
