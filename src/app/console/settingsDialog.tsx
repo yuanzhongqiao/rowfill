@@ -186,7 +186,7 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent>
                                 <Label>API Key</Label>
-                                <div className="space-y-2">
+                                <div className="flex items-center gap-2">
                                     <Input value={apiKey} disabled />
                                     <div className="flex gap-2">
                                         <Button onClick={handleCopyApiKey} size="icon"><PiClipboard /></Button>
