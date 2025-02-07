@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { PiSpinner } from "react-icons/pi"
 import Link from "next/link"
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
 
 // Define validation schemas
 const emailSchema = z.object({
@@ -98,7 +99,16 @@ export default function LoginPage() {
               <FormItem>
                 <FormLabel>OTP</FormLabel>
                 <FormControl>
-                  <Input {...field} type="text" placeholder="Enter OTP" />
+                  <InputOTP className="w-full" maxLength={6} {...field}>
+                    <InputOTPGroup className="w-full">
+                      <InputOTPSlot className="w-1/6" index={0} />
+                      <InputOTPSlot className="w-1/6" index={1} />
+                      <InputOTPSlot className="w-1/6" index={2} />
+                      <InputOTPSlot className="w-1/6" index={3} />
+                      <InputOTPSlot className="w-1/6" index={4} />
+                      <InputOTPSlot className="w-1/6" index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -107,7 +117,7 @@ export default function LoginPage() {
         )}
         <Button className="w-full" type="submit" disabled={isSubmitting}>
           {isSubmitting && <PiSpinner className="mr-2 h-4 w-4 animate-spin" />}
-          {showOTP ? "Verify OTP" : "Send Magic Link"}
+          {showOTP ? "Verify OTP" : "Login via Email"}
         </Button>
         <div className="text-sm hover:underline">
           <Link href="/auth/signup">Create an account</Link>

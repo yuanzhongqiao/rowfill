@@ -2,10 +2,12 @@
 
 import { Billing } from "@prisma/client"
 import { useEffect, useState } from "react"
-import { getBillingAndCreateIfNotExists, getPlans, handleDowngradeToFree } from "./actions"
+import { getBillingAndCreateIfNotExists, getPaddle, getPlans, handleDowngradeToFree } from "./actions"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
+import { initializePaddle } from "@paddle/paddle-js"
+
 
 export default function BillingComponent({ billingState }: { billingState: Billing }) {
 
@@ -14,7 +16,9 @@ export default function BillingComponent({ billingState }: { billingState: Billi
         price: string
         credits: string
         for: string
-        purchaseUrl: string
+        priceId?: string
+        calendarUrl?: string
+        buttonText: string
     }
 
     const [billing, setBilling] = useState<Billing>(billingState)
@@ -38,34 +42,26 @@ export default function BillingComponent({ billingState }: { billingState: Billi
         }
     }
 
-    const planButtonText = (plan: Plan) => {
-        if (billing && billing.plan === plan.name) {
-            return "Current Plan"
-        }
-
-        if (billing && billing.plan === "PRO" && plan.name === "FREE") {
-            return "Downgrade"
-        }
-
-        if (billing && billing.plan === "FREE" && plan.name.includes("PRO_")) {
-            return "Upgrade"
-        }
-
-        if (billing && billing.plan === "ENTERPRISE") {
-            return "Contact Support"
-        }
-
-        return "Contact Support"
-    }
-
     const handlePlanButton = async (plan: Plan) => {
         if (billing && billing.plan === "FREE" && plan.name !== "FREE") {
-            router.push(plan.purchaseUrl)
+            const paddleSettings = await getPaddle()
+            const paddle = await initializePaddle(paddleSettings)
+            if (paddle) {
+                paddle.Checkout.open({
+                    customer: {
+                        id: billing.thirdPartyId as string
+                    },
+                    items: [{
+                        priceId: plan.priceId || "",
+                        quantity: 1
+                    }]
+                })
+            }
             return
         }
 
         if (billing && (billing.plan === "FREE" || billing.plan === "PRO") && plan.name === "ENTERPRISE") {
-            router.push(plan.purchaseUrl)
+            router.push(plan.calendarUrl || "#")
             return
         }
 
@@ -101,14 +97,10 @@ export default function BillingComponent({ billingState }: { billingState: Billi
                         </div>
                         <Button
                             className="w-[150px]"
-                            disabled={planButtonText(plan) === "Current Plan"}
-                            onClick={
-                                () => planButtonText(plan) === "Contact Support" ?
-                                    window.location.href = "mailto:support@rowfill.com" :
-                                    handlePlanButton(plan)
-                            }
+                            disabled={plan.buttonText === "Current Plan"}
+                            onClick={() => handlePlanButton(plan)}
                         >
-                            {planButtonText(plan)}
+                            {plan.buttonText}
                         </Button>
                     </div>
                 ))}
