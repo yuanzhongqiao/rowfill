@@ -87,7 +87,7 @@ export async function getPaddle() {
     }
 
     return {
-        token: process.env.PADDLE_PUBLIC_KEY || "",
+        token: process.env.PADDLE_CLIENT_KEY || "",
         environment: process.env.PADDLE_MODE === "production" ? Environment.production : Environment.sandbox
     }
 }
