@@ -8,7 +8,10 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
-  }
+  },
+  serverExternalPackages: [
+    "bullmq"
+  ]
 };
 
 export default nextConfig
