@@ -10,6 +10,8 @@ RUN npm install -g pnpm
 
 RUN pnpm i
 
+RUN pnpx prisma generate
+
 RUN pnpm build:app
 
 RUN pnpm build:server
