@@ -79,11 +79,11 @@ export default function ConsoleLayoutContent({ children }: { children: React.Rea
               {sheets.map((sheet) => (
                 <button
                   onClick={() => router.push(`/console/sheets/${sheet.id}`)}
-                  className={`py-2 px-2 overflow-hidden text-ellipsis whitespace-nowrap rounded-md flex gap-2 items-center justify-start hover:bg-gray-200 transition-all ${pathname.includes(sheet.id) ? 'bg-gray-200' : ''}`}
+                  className={`py-2 px-2 rounded-md flex gap-2 items-center justify-start hover:bg-gray-200 transition-all ${pathname.includes(sheet.id) ? 'bg-gray-200' : ''}`}
                   key={sheet.id}
                 >
                   <PiTableBold className="text-lg font-bold" />
-                  <span className="text-[14px] font-medium text-gray-700">{sheet.name}</span>
+                  <span className="text-[14px] font-medium text-gray-700 w-[90%] text-left overflow-hidden text-ellipsis whitespace-nowrap">{sheet.name}</span>
                 </button>
               ))}
               {sheets.length === 0 && <div className="text-sm text-gray-600">No sheets found</div>}

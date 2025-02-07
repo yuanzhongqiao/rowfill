@@ -37,7 +37,7 @@ export async function getBillingAndCreateIfNotExists() {
             return null
         }
 
-        const paddle = new Paddle(process.env.PADDLE_API_KEY || "", {
+        const paddle = new Paddle(process.env.PADDLE_CLIENT_SECRET || "", {
             environment: process.env.PADDLE_MODE === "production" ? Environment.production : Environment.sandbox
         })
 
@@ -74,6 +74,24 @@ export async function getBillingAndCreateIfNotExists() {
     return billing
 }
 
+
+export async function getPaddle() {
+
+    const cloudHosted = process.env.EE_ENABLED && process.env.EE_ENABLED === "true"
+
+    if (!cloudHosted) {
+        return {
+            token: "",
+            environment: Environment.sandbox
+        }
+    }
+
+    return {
+        token: process.env.PADDLE_PUBLIC_KEY || "",
+        environment: process.env.PADDLE_MODE === "production" ? Environment.production : Environment.sandbox
+    }
+}
+
 export async function getPlans() {
 
     const cloudHosted = process.env.EE_ENABLED && process.env.EE_ENABLED === "true"
@@ -82,37 +100,81 @@ export async function getPlans() {
         return []
     }
 
+    const { userId, organizationId } = await getAuthToken()
+
+    const member = await prisma.member.findFirst({
+        where: {
+            userId: userId,
+            organizationId: organizationId,
+            role: "ADMIN"
+        }
+    })
+
+    if (!member) {
+        return []
+    }
+
+
+    const billing = await prisma.billing.findFirst({
+        where: {
+            organizationId: organizationId
+        }
+    })
+
+    if (!billing) {
+        return []
+    }
+
+
     // TODO: Implement plans
-    return [
+    let plans = [
         {
             name: "FREE",
             price: "$0",
             credits: "1000",
             for: "lifetime",
-            purchaseUrl: "",
+            buttonText: billing.plan === "FREE" ? "Current Plan" : "Upgrade"
         },
         {
             name: "PRO_MONTHLY",
             price: `$${process.env.PRO_PLAN_PRICE_MONTHLY}`,
             credits: `${process.env.PRO_PLAN_CREDITS}`,
             for: "monthly",
-            purchaseUrl: "", // TODO: Stripe Link
+            priceId: process.env.PRO_PLAN_PRICE_ID_MONTHLY || "PRO",
+            buttonText: billing.plan === "PRO" ? "Current Plan" : "Upgrade"
         },
         {
             name: "PRO_YEARLY",
             price: `$${process.env.PRO_PLAN_PRICE_YEARLY}`,
             credits: `${process.env.PRO_PLAN_CREDITS}`,
             for: "yearly",
-            purchaseUrl: "", // TODO: Stripe Link
+            priceId: process.env.PRO_PLAN_PRICE_ID_YEARLY || "PRO",
+            buttonText: billing.plan === "PRO" ? "Current Plan" : "Upgrade"
+        },
+        {
+            name: "ADDITIONAL_CREDITS",
+            price: `$${process.env.ADDITIONAL_CREDITS_PRICE}`,
+            credits: `${process.env.ADDITIONAL_CREDITS_QTY}`,
+            for: "lifetime",
+            priceId: process.env.ADDITIONAL_CREDITS_PRICE_ID || "ADDITIONAL_CREDITS",
+            buttonText: billing.plan === "PRO" ? "Current Plan" : "Upgrade"
         },
         {
             name: "ENTERPRISE",
             price: "Custom",
             credits: "100000+",
             for: "Contract",
-            purchaseUrl: "", // TODO: Calendar Link
+            calendarUrl: process.env.ENTERPRISE_CALENDAR_URL || "",
+            buttonText: billing.plan === "ENTERPRISE" ? "Current Plan" : "Contact Support"
         }
     ]
+
+    if (billing.plan === "FREE") {
+        plans = plans.filter(plan => plan.name !== "ADDITIONAL_CREDITS")
+    }
+
+    return plans
+
 }
 
 export async function handleDowngradeToFree() {

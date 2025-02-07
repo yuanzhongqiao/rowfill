@@ -23,6 +23,9 @@ importers:
       '@logtail/winston':
         specifier: ^0.5.2
         version: 0.5.2(winston@3.17.0)
+      '@paddle/paddle-js':
+        specifier: ^1.3.3
+        version: 1.3.3
       '@paddle/paddle-node-sdk':
         specifier: ^2.5.0
         version: 2.5.0
@@ -810,6 +813,9 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@paddle/paddle-js@1.3.3':
+    resolution: {integrity: sha512-kdH2einQ/NfgRkXVscdb1yqutREgMF6LwFli9Zv7by+Ck2zjaOZNYYtfko7twfPI3zcwHvWBSLd/XGbx7Kwiow==}
 
   '@paddle/paddle-node-sdk@2.5.0':
     resolution: {integrity: sha512-1ffL0bbveAR6NHUYBUtaLFWBtrPzFAkwAEcEs6OmETkHCdn5pGBNcvYLGwTJTDY3+1Ng0+BKT2P3sIhCuFQcvg==}
@@ -5257,6 +5263,8 @@ snapshots:
       fastq: 1.18.0
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@paddle/paddle-js@1.3.3': {}
 
   '@paddle/paddle-node-sdk@2.5.0': {}
 
