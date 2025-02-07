@@ -26,16 +26,11 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const paddle = new Paddle(process.env.PADDLE_API_KEY || "", {
+        const paddle = new Paddle(process.env.PADDLE_CLIENT_SECRET || "", {
             environment: process.env.PADDLE_MODE === "production" ? Environment.production : Environment.sandbox
         })
 
         const event = await paddle.webhooks.unmarshal(rawBody, secret, signature)
-
-        const planData = {
-            [process.env.PADDLE_PRICE_PRO || "PRO"]: "PRO",
-            [process.env.PADDLE_PRICE_ENT || "ENTERPRISE"]: "ENTERPRISE"
-        }
 
         if (!event) {
             return NextResponse.json(
@@ -46,7 +41,7 @@ export async function POST(request: NextRequest) {
 
         if (event && (event.eventType === EventName.TransactionCompleted)) {
             const customerId = event.data.customerId || ""
-            const planId = event.data.items[0].price?.id || ""
+            const priceId = event.data.items[0].price?.id || ""
 
             const billing = await prisma.billing.findFirstOrThrow({
                 where: {
@@ -58,16 +53,36 @@ export async function POST(request: NextRequest) {
                 await paddle.subscriptions.cancel(billing.subscriptionId, { effectiveFrom: "immediately" })
             }
 
-            await prisma.billing.update({
-                where: {
-                    organizationId: billing.organizationId
-                },
-                data: {
-                    plan: planData[planId || ""] as Plan,
-                    subscriptionId: event.data.subscriptionId,
-                    expiresAt: new Date(event.data.billingPeriod?.endsAt || "")
-                }
-            })
+            // Handle Pro Plan
+            if (priceId === process.env.PRO_PLAN_PRICE_ID_MONTHLY || priceId === process.env.PRO_PLAN_PRICE_ID_YEARLY) {
+                await prisma.billing.update({
+                    where: {
+                        organizationId: billing.organizationId
+                    },
+                    data: {
+                        plan: "PRO",
+                        credits: {
+                            increment: parseInt(process.env.PRO_PLAN_CREDITS || "0")
+                        },
+                        subscriptionId: event.data.subscriptionId,
+                        expiresAt: new Date(event.data.billingPeriod?.endsAt || "")
+                    }
+                })
+            }
+
+            // Handle Additional Credits
+            if (priceId === process.env.ADDITIONAL_CREDITS_PRICE_ID) {
+                await prisma.billing.update({
+                    where: {
+                        organizationId: billing.organizationId
+                    },
+                    data: {
+                        credits: {
+                            increment: parseInt(process.env.ADDITIONAL_CREDITS_QTY || "0")
+                        }
+                    }
+                })
+            }
         }
 
         if (event && (event.eventType === EventName.SubscriptionCanceled || event.eventType === EventName.SubscriptionPastDue)) {
