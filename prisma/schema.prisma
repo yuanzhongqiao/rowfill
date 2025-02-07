@@ -81,6 +81,8 @@ model Billing {
   organizationId String       @id @unique
   organization   Organization @relation(fields: [organizationId], references: [id])
   credits        Int          @default(1000) // 1 credit = 1 Column Task or 10 Credits for 1 row extraction
+  thirdPartyId   String?
+  subscriptionId String?
   plan           Plan         @default(FREE)
   expiresAt      DateTime?
   createdAt      DateTime     @default(now())

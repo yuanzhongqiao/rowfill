@@ -2,6 +2,7 @@
 
 import { getAuthToken } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { Environment, Paddle } from "@paddle/paddle-node-sdk"
 
 export async function getBillingAndCreateIfNotExists() {
     const { organizationId } = await getAuthToken()
@@ -18,10 +19,48 @@ export async function getBillingAndCreateIfNotExists() {
         }
     })
 
-    if (!billing && process.env.EE_ENABLED && process.env.EE_ENABLED === "true") {
+    if (!billing) {
+
+        // Find the admin of the org
+        const admin = await prisma.member.findFirst({
+            where: {
+                organizationId: organizationId,
+                role: "ADMIN"
+            },
+            include: {
+                organization: true,
+                user: true
+            }
+        })
+
+        if (!admin) {
+            return null
+        }
+
+        const paddle = new Paddle(process.env.PADDLE_API_KEY || "", {
+            environment: process.env.PADDLE_MODE === "production" ? Environment.production : Environment.sandbox
+        })
+
+        let customerId = ""
+
+        const customers = await paddle.customers.list({
+            email: [admin.user.email]
+        }).next()
+
+        if (!customers || customers.length === 0) {
+            const customer = await paddle.customers.create({
+                name: admin.organization.name,
+                email: admin.user.email
+            })
+            customerId = customer.id
+        } else {
+            customerId = customers[0].id
+        }
+
         await prisma.billing.create({
             data: {
-                organizationId: organizationId
+                organizationId: organizationId,
+                thirdPartyId: customerId
             }
         })
 
